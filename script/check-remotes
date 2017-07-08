@@ -1,0 +1,51 @@
+#!/bin/sh
+
+set -e
+
+# setup environment
+export PATH="/usr/share/rbenv/shims:$PATH"
+
+echo "hostname: $(hostname)"
+echo "pwd: $(pwd)"
+git --version
+
+# store remotes in variable
+CURRENT_REMOTES=$(git remote -v)
+
+# print out the remote information
+echo $CURRENT_REMOTES
+
+# set URL stored for origin to ORIGIN variable
+ORIGIN=$(git config remote.origin.url)
+
+# set URL for upstream to UPSTREAM variable
+UPSTREAM=$(git config remote.upstream.url)
+
+# set origin length
+ORIGIN_LENGTH=${#ORIGIN}
+
+# set length of output to size variable
+CURRENT_LENGTH=${#CURRENT_REMOTES}
+
+# set desired length by using remote url
+DESIRED_LENGTH=$(($ORIGIN_LENGTH + $ORIGIN_LENGTH + 161))
+
+if [ $UPSTREAM = 'https://github.com/githubschool/github-games.git' ]
+then
+  echo "The upstream is GitHubSchool/GitHubGames!"
+else
+  echo "The upstream is incorrect."
+  exit 1
+fi
+
+
+if [ $DESIRED_LENGTH -eq $CURRENT_LENGTH ]
+then
+  echo "You have an upstream remote set."
+else
+  echo "You do not have an upstream remote set."
+  exit 1
+fi
+
+
+exit 0
