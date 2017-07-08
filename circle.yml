@@ -1,0 +1,7 @@
+machine:
+  ruby:
+    version: 2.1.5
+
+test:
+  post:
+    - ruby tests/test_verifyurl.rb
