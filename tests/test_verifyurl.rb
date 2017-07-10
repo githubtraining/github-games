@@ -8,11 +8,20 @@ class TestGameStart < Test::Unit::TestCase
 
     # get url for remote
     remote = `git config remote.origin.url`
+    print 'Remote URL: '
+    puts remote
 
     # get username in remote url
     split_remote = remote.to_s.split('/')
-    username_remote = split_remote[4]
-    username_remote.delete!("\n")
+    username_remote_ssh = split_remote[1]
+    username_remote_https = split_remote[4]
+    if
+      username_remote_ssh.length > 0
+      then
+      username_remote = username_remote_ssh
+    else username_remote = username_remote_https
+    end
+
     user_remote_split = username_remote.to_s.split('.')
     user_remote = user_remote_split[0]
     print 'Username in remote: '
