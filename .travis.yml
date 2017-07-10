@@ -6,7 +6,4 @@ install:
   - bundle install
 
 script:
-# Line 11 introduces a pre-existing linter test to the code. 
-# Feel free to uncomment if you're curious about what this looks like! 
-  # - npm test
   - ruby tests/test_verifyurl.rb
