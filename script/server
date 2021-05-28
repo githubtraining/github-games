@@ -10,4 +10,7 @@ elif ! docker info &>/dev/null; then
   exit 1
 fi
 
+# Remove _site on script exit
+trap "rm -r _site" EXIT
+
 docker-compose up --build
