@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Test the app - if the game loads, everything is working!
+
+# Create symlink to test game
+ln -s inde.html index.html
+
+# Remove symlink on script exit
+trap "rm index.html" EXIT
+
+# Start app
+script/server

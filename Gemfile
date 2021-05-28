@@ -1,5 +1,3 @@
 source "https://rubygems.org"
 
-gem "github-pages", ">= 200"
-gem "minitest"
-gem "test-unit"
+gem 'github-pages', group: :jekyll_plugins
