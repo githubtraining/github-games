@@ -2,15 +2,19 @@
 #
 # Start the application
 
+# Exit if docker-compose is not in PATH
 if ! command -v docker-compose &>/dev/null; then
   echo "Error! Missing dependency: docker-compose. Please install and try again."
   exit 1
-elif ! docker info &>/dev/null; then
+fi
+
+# Exit if the Docker daemon isn't running
+if ! docker info &>/dev/null; then
   echo "The Docker daemon doesn't appear to be running. Please start Docker and try again."
   exit 1
 fi
 
-# Remove _site on script exit
-trap "rm -r _site" EXIT
+# Remove _site directory if it exits
+[[ -d _site ]] && rm -r _site
 
 docker-compose up --build
