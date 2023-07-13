@@ -8,5 +8,5 @@ ln -s inde.html index.html
 # Remove symlink on script exit
 trap "rm index.html" EXIT
 
-# Start app
+# Start appvcxvcxvxcvcxv
 script/server
