@@ -1,5 +1,14 @@
 ## Welcome to GitHub Games
 
+#**bold text**
+
+#_italics_
+
+**Add name :** Yao Zhan
+**Add facilator name :** Madelyn Kapfhammer
+**Add date :** 2023-11-16
+**Small blurb about us**
+
 A project based learning activity for people who are getting started with Git and GitHub.
 
 You can play the game at: https://yaozhan2022.github.io/github-games/
