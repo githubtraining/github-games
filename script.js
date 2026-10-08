@@ -1,45 +1,83 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Javascript Tetris</title>
-  <style>
-    body      { font-family: Helvetica, sans-serif; }
-    #tetris   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; }
-    #stats    { display: inline-block; vertical-align: top; }
-    #canvas   { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
-    #menu     { display: inline-block; vertical-align: top; position: relative; }
-    #menu p   { margin: 0.5em 0; text-align: center; }
-    #menu p a { text-decoration: none; color: black; }
-    #upcoming { display: block; margin: 0 auto; background-color: #E0E0E0; }
-    #score    { color: blue; font-weight: bold; vertical-align: middle; }
-    #rows     { color: blue; font-weight: bold; vertical-align: middle; }
-    #stats    { position: absolute; bottom: 0em; right: 1em; }
-    @media screen and (min-width:   0px) and (min-height:   0px)  { #tetris { font-size: 0.75em; width: 250px; } #menu { width: 100px; height: 200px; } #upcoming { width:  50px; height:  50px; } #canvas { width: 100px; height: 200px; } } /* 10px chunks */
-    @media screen and (min-width: 400px) and (min-height: 400px)  { #tetris { font-size: 1.00em; width: 350px; } #menu { width: 150px; height: 300px; } #upcoming { width:  75px; height:  75px; } #canvas { width: 150px; height: 300px; } } /* 15px chunks */
-    @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } /* 20px chunks */
-    @media screen and (min-width: 600px) and (min-height: 600px)  { #tetris { font-size: 1.50em; width: 550px; } #menu { width: 250px; height: 500px; } #upcoming { width: 125px; height: 125px; } #canvas { width: 250px; height: 500px; } } /* 25px chunks */
-    @media screen and (min-width: 700px) and (min-height: 700px)  { #tetris { font-size: 1.75em; width: 650px; } #menu { width: 300px; height: 600px; } #upcoming { width: 150px; height: 150px; } #canvas { width: 300px; height: 600px; } } /* 30px chunks */
-    @media screen and (min-width: 800px) and (min-height: 800px)  { #tetris { font-size: 2.00em; width: 750px; } #menu { width: 350px; height: 700px; } #upcoming { width: 175px; height: 175px; } #canvas { width: 350px; height: 700px; } } /* 35px chunks */
-    @media screen and (min-width: 900px) and (min-height: 900px)  { #tetris { font-size: 2.25em; width: 850px; } #menu { width: 400px; height: 800px; } #upcoming { width: 200px; height: 200px; } #canvas { width: 400px; height: 800px; } } /* 40px chunks */
-  </style>
-</head>
 
-<body>
+// stats.js r6 - http://github.com/mrdoob/stats.js
+var Stats = function () {
+    function s(a, g, d) { var f, c, e; for (c = 0; c < 30; c++)for (f = 0; f < 73; f++)e = (f + c * 74) * 4, a[e] = a[e + 4], a[e + 1] = a[e + 5], a[e + 2] = a[e + 6]; for (c = 0; c < 30; c++)e = (73 + c * 74) * 4, c < g ? (a[e] = b[d].bg.r, a[e + 1] = b[d].bg.g, a[e + 2] = b[d].bg.b) : (a[e] = b[d].fg.r, a[e + 1] = b[d].fg.g, a[e + 2] = b[d].fg.b) } var r = 0, t = 2, g, u = 0, j = (new Date).getTime(), F = j, v = j, l = 0, w = 1E3, x = 0, k, d, a, m, y, n = 0, z = 1E3, A = 0, f, c, o, B, p = 0, C = 1E3, D = 0, h, i, q, E, b = {
+        fps: { bg: { r: 16, g: 16, b: 48 }, fg: { r: 0, g: 255, b: 255 } }, ms: { bg: { r: 16, g: 48, b: 16 }, fg: { r: 0, g: 255, b: 0 } }, mb: {
+            bg: {
+                r: 48, g: 16,
+                b: 26
+            }, fg: { r: 255, g: 0, b: 128 }
+        }
+    }; g = document.createElement("div"); 
+    g.style.cursor = "pointer"; 
+    g.style.width = "80px"; 
+    g.style.opacity = "0.9"; 
+    g.style.zIndex = "10001"; 
+    g.addEventListener("click", function () { r++; r == t && (r = 0); 
+        k.style.display = "none"; 
+        f.style.display = "none"; 
+        h.style.display = "none"; 
+        switch (r) { case 0: k.style.display = "block"; 
+            break; case 1: f.style.display = "block"; 
+            break; case 2: h.style.display = "block" } }, !1); 
+            k = document.createElement("div"); 
+            k.style.backgroundColor = "rgb(" + Math.floor(b.fps.bg.r / 2) + "," + Math.floor(b.fps.bg.g /
+        2) + "," + Math.floor(b.fps.bg.b / 2) + ")"; k.style.padding = "2px 0px 3px 0px"; 
+        g.appendChild(k); 
+        d = document.createElement("div"); 
+        d.style.fontFamily = "Helvetica, Arial, sans-serif"; 
+        d.style.textAlign = "left"; 
+        d.style.fontSize = "9px"; 
+        d.style.color = "rgb(" + b.fps.fg.r + "," + b.fps.fg.g + "," + b.fps.fg.b + ")"; 
+        d.style.margin = "0px 0px 1px 3px"; d.innerHTML = '<span style="font-weight:bold">FPS</span>'; 
+        k.appendChild(d);
+        a = document.createElement("canvas");
+        a.width = 74;
+        a.height = 30;
+        a.style.display = "block";
+        a.style.marginLeft = "3px";
+        k.appendChild(a);
+    m = a.getContext("2d");
+     m.fillStyle = "rgb(" + b.fps.bg.r + "," + b.fps.bg.g + "," + b.fps.bg.b + ")";
+      m.fillRect(0, 0, a.width, a.height);
+       y = m.getImageData(0, 0, a.width, a.height);
+        f = document.createElement("div");
+         f.style.backgroundColor = "rgb(" + Math.floor(b.ms.bg.r / 2) + "," + Math.floor(b.ms.bg.g / 2) + "," + Math.floor(b.ms.bg.b / 2) + ")";
+          f.style.padding = "2px 0px 3px 0px"; f.style.display = "none";
+           g.appendChild(f); c = document.createElement("div");
+            c.style.fontFamily = "Helvetica, Arial, sans-serif";
+             c.style.textAlign = "left"; c.style.fontSize = "9px";
+         c.style.color = "rgb(" + b.ms.fg.r + "," + b.ms.fg.g + "," + b.ms.fg.b + ")";
+        c.style.margin = "0px 0px 1px 3px"; c.innerHTML = '<span style="font-weight:bold">MS</span>';
+        f.appendChild(c); a = document.createElement("canvas");
+        a.width = 74; a.height = 30; a.style.display = "block"; a.style.marginLeft = "3px"; f.appendChild(a);
+        o = a.getContext("2d"); o.fillStyle = "rgb(" + b.ms.bg.r + "," + b.ms.bg.g + "," + b.ms.bg.b + ")";
+        o.fillRect(0, 0, a.width, a.height); B = o.getImageData(0, 0, a.width, a.height); try {
+        performance && performance.memory && performance.memory.totalJSHeapSize && (t = 3)
+        } catch (G) { } h = document.createElement("div"); h.style.backgroundColor = "rgb(" + Math.floor(b.mb.bg.r / 2) + "," + Math.floor(b.mb.bg.g / 2) + "," + Math.floor(b.mb.bg.b / 2) + ")";
+        h.style.padding = "2px 0px 3px 0px"; h.style.display = "none";
+        g.appendChild(h);
+        i = document.createElement("div"); i.style.fontFamily = "Helvetica, Arial, sans-serif"; i.style.textAlign = "left"; i.style.fontSize = "9px"; i.style.color = "rgb(" + b.mb.fg.r + "," + b.mb.fg.g + "," + b.mb.fg.b + ")"; 
+        i.style.margin = "0px 0px 1px 3px"; i.innerHTML = '<span style="font-weight:bold">MB</span>';
+        h.appendChild(i);
+        a = document.createElement("canvas");
+        a.width = 74; a.height = 30; a.style.display = "block"; a.style.marginLeft = "3px"; h.appendChild(a);
+        q = a.getContext("2d"); q.fillStyle = "#301010"; q.fillRect(0, 0, a.width, a.height);
+        E = q.getImageData(0, 0, a.width, a.height); return {
+        domElement: g, update: function () {
+            u++; j = (new Date).getTime(); n = j - F; z = Math.min(z, n); A = Math.max(A, n); s(B.data, Math.min(30, 30 - n / 200 * 30), "ms"); c.innerHTML = '<span style="font-weight:bold">' + n + " MS</span> (" + z + "-" + A + ")";
+             o.putImageData(B, 0, 0);
+              F = j; if (j > v + 1E3) { l = Math.round(u * 1E3 / (j - v)); w = Math.min(w, l);
+                 x = Math.max(x, l);
+                  s(y.data, Math.min(30, 30 - l / 100 * 30), "fps");
+                   d.innerHTML = '<span style="font-weight:bold">' + l + " FPS</span> (" + w + "-" + x + ")"; 
+                   m.putImageData(y, 0, 0); if (t == 3) p = performance.memory.usedJSHeapSize * 9.54E-7, C = Math.min(C, p), D = Math.max(D, p), s(E.data, Math.min(30, 30 - p / 2), "mb"), i.innerHTML = '<span style="font-weight:bold">' + Math.round(p) + " MB</span> (" + Math.round(C) + "-" + Math.round(D) + ")", q.putImageData(E, 0, 0); v = j;
+                    u = 0 }
+        }
+    }
+};
 
-  <div id="tetris">
-    <div id="menu">
-      <p id="start"><a href="javascript:play();">Press Space to Play.</a></p>
-      <p><canvas id="upcoming"></canvas></p>
-      <p>score <span id="score">00000</span></p>
-      <p>rows <span id="rows">0</span></p>
-    </div>
-    <canvas id="canvas">
-      Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
-    </canvas>
-  </div>
 
-  <script src="stats.js"></script>
-  <script>
 
     //-------------------------------------------------------------------------
     // base helper methods
@@ -200,6 +238,9 @@
     function addEvents() {
       document.addEventListener('keydown', keydown, false);
       window.addEventListener('resize', resize, false);
+      get('game-over-restart').addEventListener('click', function() {
+        window.location.reload();
+      });
     }
 
     function resize(event) {
@@ -215,6 +256,8 @@
 
     function keydown(ev) {
       var handled = false;
+      if (!get('game-over').hidden)
+        return;
       if (playing) {
         switch(ev.keyCode) {
           case KEY.LEFT:   actions.push(DIR.LEFT);  handled = true; break;
@@ -245,7 +288,29 @@
     function play() { hide('start'); reset();      paused = false;  playing = true;  }
     function pause() {show('start'); paused = true; playing = false;}
     function restart() {hide('start'); paused = false; playing = true;}
-    function lose() { show('start'); setVisualScore(); playing = false; }
+    function lose() {
+      hide('start');
+      setVisualScore();
+      html('game-over-score', ("00000" + Math.floor(score)).slice(-5));
+      html('game-over-rows', rows);
+      drawGameOverPiece();
+      get('game-over').hidden = false;
+      playing = false;
+    }
+
+    function drawGameOverPiece() {
+      var pieceCanvas = get('game-over-piece');
+      var pieceContext;
+      var padding = (nu - current.type.size) / 2;
+      pieceCanvas.width = nu * dx;
+      pieceCanvas.height = nu * dy;
+      pieceContext = pieceCanvas.getContext('2d');
+      pieceContext.save();
+      pieceContext.lineWidth = 1;
+      pieceContext.translate(0.5, 0.5);
+      drawPiece(pieceContext, current.type, padding, padding, current.dir);
+      pieceContext.restore();
+    }
 
     function setVisualScore(n)      { vscore = n || score; invalidateScore(); }
     function setScore(n)            { score = n; setVisualScore(n);  }
@@ -452,7 +517,4 @@
 
     run();
 
-  </script>
 
-</body>
-</html>
