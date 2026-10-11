@@ -3,14 +3,36 @@
 <head>
   <title>Javascript Tetris</title>
   <style>
-    body      { font-family: Helvetica, sans-serif; }
-    #tetris   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; }
+    :root {
+      --page-background: #FFFFFF;
+      --panel-background: #F8F8F8;
+      --text-color: #000000;
+      --border-color: #000000;
+      --canvas-background: url(texture.jpg);
+      --canvas-shadow: #999999;
+      --upcoming-background: #E0E0E0;
+      --button-background: #FFFFFF;
+    }
+
+    body      { font-family: Helvetica, sans-serif; background-color: var(--page-background); color: var(--text-color); }
+    body.dark-mode {
+      --page-background: #121212;
+      --panel-background: #242424;
+      --text-color: #F5F5F5;
+      --border-color: #F5F5F5;
+      --canvas-background: #1B1B1B;
+      --canvas-shadow: #000000;
+      --upcoming-background: #333333;
+      --button-background: #333333;
+    }
+    #tetris   { position: relative; margin: 1em auto; padding: 1em; border: 4px solid var(--border-color); border-radius: 10px; background-color: var(--panel-background); }
     #stats    { display: inline-block; vertical-align: top; }
-    #canvas   { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
+    #canvas   { display: inline-block; vertical-align: top; background: var(--canvas-background); box-shadow: 10px 10px 10px var(--canvas-shadow); border: 2px solid var(--border-color); }
     #menu     { display: inline-block; vertical-align: top; position: relative; }
-    #menu p   { margin: 0.5em 0; text-align: center; }
-    #menu p a { text-decoration: none; color: black; }
-    #upcoming { display: block; margin: 0 auto; background-color: #E0E0E0; }
+    #menu p   { margin: 0.5em 0; text-align: center; color: var(--text-color); }
+    #menu p a { text-decoration: none; color: var(--text-color); }
+    #upcoming { display: block; margin: 0 auto; background-color: var(--upcoming-background); }
+    #theme-toggle { position: absolute; top: 0.5em; right: 0.5em; border: 1px solid var(--border-color); border-radius: 50%; background: var(--button-background); color: var(--text-color); cursor: pointer; font-size: 1em; line-height: 1; padding: 0.3em; }
     #score    { color: blue; font-weight: bold; vertical-align: middle; }
     #rows     { color: blue; font-weight: bold; vertical-align: middle; }
     #stats    { position: absolute; bottom: 0em; right: 1em; }
@@ -27,6 +49,7 @@
 <body>
 
   <div id="tetris">
+    <button id="theme-toggle" type="button" aria-label="Ativar modo noturno">&#9790;</button>
     <div id="menu">
       <p id="start"><a href="javascript:play();">Press Space to Play.</a></p>
       <p><canvas id="upcoming"></canvas></p>
@@ -68,7 +91,7 @@
     // game constants
     //-------------------------------------------------------------------------
 
-    var KEY     = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40 },
+    var KEY     = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, R: 82 },
         DIR     = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3, MIN: 0, MAX: 3 },
         stats   = new Stats(),
         canvas  = get('canvas'),
@@ -96,6 +119,8 @@
         vscore,        // the currently displayed score (it catches up to score in small chunks - like a spinning slot machine)
         rows,          // number of completed rows in the current game
         step;          // how long before current piece drops by 1 row
+
+    var darkMode = false;
 
     //-------------------------------------------------------------------------
     // tetris pieces
@@ -197,9 +222,19 @@
       get('menu').appendChild(stats.domElement);
     }
 
+    function toggleTheme() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
+      html('theme-toggle', darkMode ? '&#9728;' : '&#9790;');
+      get('theme-toggle').setAttribute('aria-label', darkMode ? 'Desativar modo noturno' : 'Ativar modo noturno');
+      invalidate();
+      invalidateNext();
+    }
+
     function addEvents() {
       document.addEventListener('keydown', keydown, false);
       window.addEventListener('resize', resize, false);
+      get('theme-toggle').addEventListener('click', toggleTheme, false);
     }
 
     function resize(event) {
@@ -214,29 +249,63 @@
     }
 
     function keydown(ev) {
-      var handled = false;
-      if (playing) {
-        switch(ev.keyCode) {
-          case KEY.LEFT:   actions.push(DIR.LEFT);  handled = true; break;
-          case KEY.RIGHT:  actions.push(DIR.RIGHT); handled = true; break;
-          case KEY.UP:     actions.push(DIR.UP);    handled = true; break;
-          case KEY.DOWN:   actions.push(DIR.DOWN);  handled = true; break;
-          case KEY.ESC:    lose();                  handled = true; break;
-          case KEY.SPACE:  pause();                 handled = true; break;
+        var handled = false;
+
+        if (document.activeElement &&
+          (document.activeElement.tagName === 'INPUT' ||
+            document.activeElement.tagName === 'TEXTAREA' ||
+            document.activeElement.isContentEditable)) {
+          return;
+        }
+
+        if (ev.keyCode == KEY.LEFT || ev.keyCode == KEY.RIGHT || ev.keyCode == KEY.UP || ev.keyCode == KEY.DOWN) {
+          if (!paused) {
+            switch (ev.keyCode) {
+              case KEY.LEFT: actions.push(DIR.LEFT); handled = true; break;
+              case KEY.RIGHT: actions.push(DIR.RIGHT); handled = true; break;
+              case KEY.UP: actions.push(DIR.UP); handled = true; break;
+              case KEY.DOWN: actions.push(DIR.DOWN); handled = true; break;
+              case KEY.ESC: lose(); handled = true; break;
+              case KEY.SPACE: pause(); handled = true; break;
+              case KEY.R: requestRestart(); handled = true; break;
+            }
+          }
+        }
+        else if (ev.keyCode == KEY.SPACE) {
+          if (paused) {
+            restart();
+          } else if (playing) {
+            pause();
+          } else {
+            play();
+          }
+
+          handled = true;
+        }
+        else if (ev.keyCode == KEY.R) {
+          requestRestart();
+          handled = true;
+        }
+
+        if (handled)
+          ev.preventDefault();
+      }
+
+    // Função de Reinicio Rápido do Jogo (Quick-resart)
+    function requestRestart() {
+        if (!playing && !paused) return;
+
+        if (window.confirm('Tem certeza que deseja reiniciar a partida?')) {
+          restartGame();
         }
       }
-      else if (ev.keyCode == KEY.SPACE) {
-        if(paused) {
-            restart();
-            handled = true;
-          }else{
-            play();
-            handled = true;
-          }
+
+      function restartGame() {
+        reset();
+        hide('start');
+        paused = false;
+        playing = true;
       }
-      if (handled)
-        ev.preventDefault(); // prevent arrow keys from scrolling the page (supported in IE9+ and all other browsers)
-    }
 
     //-------------------------------------------------------------------------
     // GAME LOGIC
@@ -401,6 +470,7 @@
               drawBlock(ctx, x, y, block.color);
           }
         }
+        ctx.strokeStyle = darkMode ? '#F5F5F5' : '#000000';
         ctx.strokeRect(0, 0, nx*dx - 1, ny*dy - 1); // court boundary
         invalid.court = false;
       }
@@ -413,7 +483,7 @@
         uctx.translate(0.5, 0.5);
         uctx.clearRect(0, 0, nu*dx, nu*dy);
         drawPiece(uctx, next.type, padding, padding, next.dir);
-        uctx.strokeStyle = 'black';
+        uctx.strokeStyle = darkMode ? '#F5F5F5' : '#000000';
         uctx.strokeRect(0, 0, nu*dx - 1, nu*dy - 1);
         uctx.restore();
         invalid.next = false;
