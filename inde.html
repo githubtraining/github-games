@@ -97,6 +97,8 @@
         rows,          // number of completed rows in the current game
         step;          // how long before current piece drops by 1 row
 
+    var highScore = Number(localStorage.getItem('highScore')) || 0;
+
     //-------------------------------------------------------------------------
     // tetris pieces
     //
@@ -245,7 +247,15 @@
     function play() { hide('start'); reset();      paused = false;  playing = true;  }
     function pause() {show('start'); paused = true; playing = false;}
     function restart() {hide('start'); paused = false; playing = true;}
-    function lose() { show('start'); setVisualScore(); playing = false; }
+    function lose() {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+      }
+      show('start');
+      setVisualScore();
+      playing = false;
+    }
 
     function setVisualScore(n)      { vscore = n || score; invalidateScore(); }
     function setScore(n)            { score = n; setVisualScore(n);  }
