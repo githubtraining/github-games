@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Javascript Tetris</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div id="tetris">
+
+    <div id="menu">
+
+      <p id="start">
+        <a href="javascript:play();">Press Space to Play.</a>
+      </p>
+
+      <p>
+        <canvas id="upcoming"></canvas>
+      </p>
+
+      <p>
+        score <span id="score">00000</span>
+      </p>
+
+      <p>
+        rows <span id="rows">0</span>
+      </p>
+
+      <!-- Seletor de tema -->
+      <div id="theme-container">
+
+        <label for="theme-select">🎨 Tema</label>
+
+        <select id="theme-select">
+          <option value="classic">Clássico</option>
+          <option value="ocean">Oceano</option>
+          <option value="red">Vermelho</option>
+          <option value="neon">Neon</option>
+        </select>
+
+      </div>
+
+    </div>
+
+    <canvas id="canvas">
+      Sorry, this example cannot be run because your browser does not support the
+      &lt;canvas&gt; element
+    </canvas>
+
+  </div>
+
+  <div id="game-over" role="dialog" aria-modal="true" aria-labelledby="game-over-title" hidden>
+    <div class="game-over-content">
+      <h1 id="game-over-title">Game-Over</h1>
+      <canvas id="game-over-piece" width="100" height="100" aria-label="Peça que causou o fim do jogo"></canvas>
+      <p class="game-over-final-score">Pontuação final: <strong id="game-over-score">00000</strong></p>
+      <p class="game-over-final-rows">Linhas: <strong id="game-over-rows">0</strong></p>
+      <button id="game-over-restart" type="button">Voltar ao jogo</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
