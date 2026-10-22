@@ -1,19 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <title>Javascript Tetris</title>
   <style>
-    body      { font-family: Helvetica, sans-serif; }
-    #tetris   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; }
+    :root {
+      --page-background: #FFFFFF;
+      --panel-background: #F8F8F8;
+      --text-color: #000000;
+      --border-color: #000000;
+      --canvas-background: url(texture.jpg);
+      --canvas-shadow: #999999;
+      --upcoming-background: #E0E0E0;
+      --button-background: #FFFFFF;
+    }
+
+    body      { font-family: Helvetica, sans-serif; background-color: var(--page-background); color: var(--text-color); }
+    body.dark-mode {
+      --page-background: #121212;
+      --panel-background: #242424;
+      --text-color: #F5F5F5;
+      --border-color: #F5F5F5;
+      --canvas-background: #1B1B1B;
+      --canvas-shadow: #000000;
+      --upcoming-background: #333333;
+      --button-background: #333333;
+    }
+    #tetris   { position: relative; margin: 1em auto; padding: 1em; border: 4px solid var(--border-color); border-radius: 10px; background-color: var(--panel-background); }
     #stats    { display: inline-block; vertical-align: top; }
-    #canvas   { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
+    #canvas   { display: inline-block; vertical-align: top; background: var(--canvas-background); box-shadow: 10px 10px 10px var(--canvas-shadow); border: 2px solid var(--border-color); }
     #menu     { display: inline-block; vertical-align: top; position: relative; }
-    #menu p   { margin: 0.5em 0; text-align: center; }
-    #menu p a { text-decoration: none; color: black; }
-    #upcoming { display: block; margin: 0 auto; background-color: #E0E0E0; }
+    #menu p   { margin: 0.5em 0; text-align: center; color: var(--text-color); }
+    #menu p a { text-decoration: none; color: var(--text-color); }
+    #upcoming { display: block; margin: 0 auto; background-color: var(--upcoming-background); }
+    #theme-toggle { position: absolute; top: 0.5em; right: 0.5em; border: 1px solid var(--border-color); border-radius: 50%; background: var(--button-background); color: var(--text-color); cursor: pointer; font-size: 1em; line-height: 1; padding: 0.3em; }
     #score    { color: blue; font-weight: bold; vertical-align: middle; }
     #rows     { color: blue; font-weight: bold; vertical-align: middle; }
+    #court    { display: inline-block; vertical-align: top; position: relative; }
+    #msg      { position: absolute; top: 45%; left: 50%; width: 80%; padding: 0.4em 0.2em; border-radius: 12px; text-align: center; font-size: 1.1em; font-weight: bold; color: #FFF; text-shadow: 2px 2px 0 rgba(0,0,0,0.35); pointer-events: none; opacity: 0; z-index: 10; }
+    #msg.bem      { background: #27ae60; border: 3px solid #1e8449; }
+    #msg.parabens { background: #f39c12; border: 3px solid #d35400; }
+    #msg.perfeito { background: linear-gradient(90deg, #e74c3c, #f39c12, #f1c40f, #2ecc71, #3498db, #9b59b6); border: 3px solid #FFF; }
+    #msg.meta     { background: #8e44ad; border: 3px solid gold; font-size: 1.2em; }
+    #msg.animar      { animation: aparecer 1.6s ease-out forwards; }
+    #msg.meta.animar { animation: aparecer 2.2s ease-out forwards, brilho 0.3s ease-in-out 6 alternate; }
+    #canvas.piscar   { animation: piscar 0.4s ease-out; }
+
+    @keyframes aparecer {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-10deg); }
+      15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.25) rotate(3deg); }
+      25%  { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+      75%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -180%) scale(0.8); }
+    }
+    @keyframes brilho {
+      from { box-shadow: 0 0 5px 2px gold; }
+      to   { box-shadow: 0 0 30px 10px gold; }
+    }
+    @keyframes piscar {
+      0%   { box-shadow: 0 0 30px 8px #FFF; }
+      100% { box-shadow: 10px 10px 10px var(--canvas-shadow); }
+    }
     #stats    { position: absolute; bottom: 0em; right: 1em; }
+    #high-score {
+      color:green; font-weight: bold; vertical-align: middle;
+    }
     @media screen and (min-width:   0px) and (min-height:   0px)  { #tetris { font-size: 0.75em; width: 250px; } #menu { width: 100px; height: 200px; } #upcoming { width:  50px; height:  50px; } #canvas { width: 100px; height: 200px; } } /* 10px chunks */
     @media screen and (min-width: 400px) and (min-height: 400px)  { #tetris { font-size: 1.00em; width: 350px; } #menu { width: 150px; height: 300px; } #upcoming { width:  75px; height:  75px; } #canvas { width: 150px; height: 300px; } } /* 15px chunks */
     @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } /* 20px chunks */
@@ -21,21 +72,96 @@
     @media screen and (min-width: 700px) and (min-height: 700px)  { #tetris { font-size: 1.75em; width: 650px; } #menu { width: 300px; height: 600px; } #upcoming { width: 150px; height: 150px; } #canvas { width: 300px; height: 600px; } } /* 30px chunks */
     @media screen and (min-width: 800px) and (min-height: 800px)  { #tetris { font-size: 2.00em; width: 750px; } #menu { width: 350px; height: 700px; } #upcoming { width: 175px; height: 175px; } #canvas { width: 350px; height: 700px; } } /* 35px chunks */
     @media screen and (min-width: 900px) and (min-height: 900px)  { #tetris { font-size: 2.25em; width: 850px; } #menu { width: 400px; height: 800px; } #upcoming { width: 200px; height: 200px; } #canvas { width: 400px; height: 800px; } } /* 40px chunks */
+
+    /* Style do modal de confirmação de reinício do jogo */
+    #restart-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.65);
+    }
+
+    #restart-modal.visible {
+      display: flex;
+    }
+
+    #restart-dialog {
+      width: min(90%, 360px);
+      padding: 1.5em;
+      border: 2px solid #333;
+      border-radius: 12px;
+      background-color: #F8F8F8;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      color: #222;
+      text-align: center;
+    }
+
+    #restart-dialog h2 {
+      margin: 0 0 0.75em;
+      color: #333;
+      font-size: 1.25em;
+    }
+
+    #restart-dialog p {
+      margin: 0 0 1.5em;
+    }
+
+    #restart-dialog button {
+      min-width: 110px;
+      margin: 0 0.35em;
+      padding: 0.65em 1em;
+      border: 0;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-weight: bold;
+    }
+
+    #restart-cancel {
+      background-color: #777;
+    }
+
+    #restart-confirm {
+      background-color: #c0392b;
+    }
+
+    #restart-dialog button:hover {
+      filter: brightness(0.9);
+    }
   </style>
 </head>
 
 <body>
 
   <div id="tetris">
+    <button id="theme-toggle" type="button" aria-label="Ativar modo noturno">&#9790;</button>
     <div id="menu">
       <p id="start"><a href="javascript:play();">Press Space to Play.</a></p>
       <p><canvas id="upcoming"></canvas></p>
       <p>score <span id="score">00000</span></p>
+      <p>score record <span id="high-score">00000</span></p>
       <p>rows <span id="rows">0</span></p>
+      <p>meta <span id="meta">5</span></p>
     </div>
-    <canvas id="canvas">
-      Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
-    </canvas>
+    <div id="court">
+      <canvas id="canvas">
+        Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
+      </canvas>
+      <div id="msg"></div>
+    </div>
+  </div>
+
+  <div id="restart-modal" role="dialog" aria-modal="true" aria-labelledby="restart-title">
+    <div id="restart-dialog">
+      <h2 id="restart-title">Reiniciar partida?</h2>
+      <p>Tem certeza que deseja reiniciar a partida?</p>
+      <button id="restart-cancel" type="button">Cancelar</button>
+      <button id="restart-confirm" type="button">Reiniciar</button>
+    </div>
   </div>
 
   <script src="stats.js"></script>
@@ -68,7 +194,7 @@
     // game constants
     //-------------------------------------------------------------------------
 
-    var KEY     = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40 },
+    var KEY     = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, R: 82 },
         DIR     = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3, MIN: 0, MAX: 3 },
         stats   = new Stats(),
         canvas  = get('canvas'),
@@ -96,6 +222,14 @@
         vscore,        // the currently displayed score (it catches up to score in small chunks - like a spinning slot machine)
         rows,          // number of completed rows in the current game
         step;          // how long before current piece drops by 1 row
+
+    var highScore = Number(localStorage.getItem('highScore')) || 0;
+    var darkMode = false;
+
+    // mensagens que aparecem quando completa linha
+    var mensagens = ['Muito bem!', 'Parabéns!', 'Perfeito!'];
+    var tipos     = ['bem', 'parabens', 'perfeito'];
+    var meta = 5;
 
     //-------------------------------------------------------------------------
     // tetris pieces
@@ -197,9 +331,22 @@
       get('menu').appendChild(stats.domElement);
     }
 
+    function toggleTheme() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
+      html('theme-toggle', darkMode ? '&#9728;' : '&#9790;');
+      get('theme-toggle').setAttribute('aria-label', darkMode ? 'Desativar modo noturno' : 'Ativar modo noturno');
+      invalidate();
+      invalidateNext();
+    }
+
     function addEvents() {
       document.addEventListener('keydown', keydown, false);
       window.addEventListener('resize', resize, false);
+      get('theme-toggle').addEventListener('click', toggleTheme, false);
+
+      get('restart-cancel').addEventListener('click', closeRestartModal, false);
+      get('restart-confirm').addEventListener('click', confirmRestart, false);
     }
 
     function resize(event) {
@@ -214,29 +361,71 @@
     }
 
     function keydown(ev) {
-      var handled = false;
-      if (playing) {
-        switch(ev.keyCode) {
-          case KEY.LEFT:   actions.push(DIR.LEFT);  handled = true; break;
-          case KEY.RIGHT:  actions.push(DIR.RIGHT); handled = true; break;
-          case KEY.UP:     actions.push(DIR.UP);    handled = true; break;
-          case KEY.DOWN:   actions.push(DIR.DOWN);  handled = true; break;
-          case KEY.ESC:    lose();                  handled = true; break;
-          case KEY.SPACE:  pause();                 handled = true; break;
+        var handled = false;
+
+        if (document.activeElement &&
+          (document.activeElement.tagName === 'INPUT' ||
+            document.activeElement.tagName === 'TEXTAREA' ||
+            document.activeElement.isContentEditable)) {
+          return;
         }
-      }
-      else if (ev.keyCode == KEY.SPACE) {
-        if(paused) {
-            restart();
-            handled = true;
-          }else{
-            play();
-            handled = true;
+
+        if (ev.keyCode == KEY.LEFT || ev.keyCode == KEY.RIGHT || ev.keyCode == KEY.UP || ev.keyCode == KEY.DOWN) {
+          if (!paused) {
+            switch (ev.keyCode) {
+              case KEY.LEFT: actions.push(DIR.LEFT); handled = true; break;
+              case KEY.RIGHT: actions.push(DIR.RIGHT); handled = true; break;
+              case KEY.UP: actions.push(DIR.UP); handled = true; break;
+              case KEY.DOWN: actions.push(DIR.DOWN); handled = true; break;
+              case KEY.ESC: lose(); handled = true; break;
+              case KEY.SPACE: pause(); handled = true; break;
+              case KEY.R: requestRestart(); handled = true; break;
+            }
           }
+        }
+        else if (ev.keyCode == KEY.SPACE) {
+          if (paused) {
+            restart();
+          } else if (playing) {
+            pause();
+          } else {
+            play();
+          }
+
+          handled = true;
+        }
+        else if (ev.keyCode == KEY.R) {
+          requestRestart();
+          handled = true;
+        }
+
+        if (handled)
+          ev.preventDefault();
       }
-      if (handled)
-        ev.preventDefault(); // prevent arrow keys from scrolling the page (supported in IE9+ and all other browsers)
-    }
+
+    // Função de Reinicio Rápido do Jogo (Quick-resart)
+    function requestRestart() {
+        if (!playing && !paused) return;
+
+        get('restart-modal').classList.add('visible');
+        get('restart-confirm').focus();
+      }
+
+      function closeRestartModal() {
+        get('restart-modal').classList.remove('visible');
+      }
+
+      function confirmRestart() {
+        closeRestartModal();
+        restartGame();
+      }
+
+      function restartGame() {
+        reset();
+        hide('start');
+        paused = false;
+        playing = true;
+      }
 
     //-------------------------------------------------------------------------
     // GAME LOGIC
@@ -245,7 +434,16 @@
     function play() { hide('start'); reset();      paused = false;  playing = true;  }
     function pause() {show('start'); paused = true; playing = false;}
     function restart() {hide('start'); paused = false; playing = true;}
-    function lose() { show('start'); setVisualScore(); playing = false; }
+    function lose() {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+      }
+      drawHighScore();
+      show('start');
+      setVisualScore();
+      playing = false;
+    }
 
     function setVisualScore(n)      { vscore = n || score; invalidateScore(); }
     function setScore(n)            { score = n; setVisualScore(n);  }
@@ -267,6 +465,8 @@
       clearBlocks();
       clearRows();
       clearScore();
+      setMeta(5);
+      get('msg').className = '';
       setCurrentPiece(next);
       setNextPiece();
     }
@@ -356,7 +556,29 @@
       if (n > 0) {
         addRows(n);
         addScore(100*Math.pow(2,n-1)); // 1: 100, 2: 200, 3: 400, 4: 800
+        if (rows >= meta) {
+          mostrarMensagem('Parabéns!<br>Meta de ' + meta + ' linhas!', 'meta');
+          setMeta(meta + 5);
+        }
+        else {
+          var i = Math.min(n, 3) - 1;
+          mostrarMensagem(mensagens[i], tipos[i]);
+        }
       }
+    }
+
+    function setMeta(n) { meta = n; html('meta', meta); }
+
+    function mostrarMensagem(texto, tipo) {
+      var msg = get('msg');
+      msg.innerHTML = texto;
+      msg.className = tipo;
+      void msg.offsetWidth;
+      msg.className = tipo + ' animar';
+
+      canvas.classList.remove('piscar');
+      void canvas.offsetWidth;
+      canvas.classList.add('piscar');
     }
 
     function removeLine(n) {
@@ -401,6 +623,7 @@
               drawBlock(ctx, x, y, block.color);
           }
         }
+        ctx.strokeStyle = darkMode ? '#F5F5F5' : '#000000';
         ctx.strokeRect(0, 0, nx*dx - 1, ny*dy - 1); // court boundary
         invalid.court = false;
       }
@@ -413,7 +636,7 @@
         uctx.translate(0.5, 0.5);
         uctx.clearRect(0, 0, nu*dx, nu*dy);
         drawPiece(uctx, next.type, padding, padding, next.dir);
-        uctx.strokeStyle = 'black';
+        uctx.strokeStyle = darkMode ? '#F5F5F5' : '#000000';
         uctx.strokeRect(0, 0, nu*dx - 1, nu*dy - 1);
         uctx.restore();
         invalid.next = false;
@@ -433,6 +656,9 @@
         invalid.rows = false;
       }
     }
+    function drawHighScore() {
+      html('high-score', ("00000" + highScore).slice(-5));
+    }
 
     function drawPiece(ctx, type, x, y, dir) {
       eachblock(type, x, y, dir, function(x, y) {
@@ -450,6 +676,7 @@
     // FINALLY, lets run the game
     //-------------------------------------------------------------------------
 
+    drawHighScore();
     run();
 
   </script>
