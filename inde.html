@@ -3,17 +3,49 @@
 <head>
   <title>Javascript Tetris</title>
   <style>
-    body      { font-family: Helvetica, sans-serif; }
-    #tetris   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; }
-    #stats    { display: inline-block; vertical-align: top; }
-    #canvas   { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
-    #menu     { display: inline-block; vertical-align: top; position: relative; }
-    #menu p   { margin: 0.5em 0; text-align: center; }
-    #menu p a { text-decoration: none; color: black; }
-    #upcoming { display: block; margin: 0 auto; background-color: #E0E0E0; }
-    #score    { color: blue; font-weight: bold; vertical-align: middle; }
-    #rows     { color: blue; font-weight: bold; vertical-align: middle; }
-    #stats    { position: absolute; bottom: 0em; right: 1em; }
+    body        { font-family: Helvetica, sans-serif; }
+    #tetris     { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; position: relative; width: fit-content; }
+    #stats      { display: inline-block; vertical-align: top; }
+    #canvas     { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
+    #menu       { display: inline-block; vertical-align: top; position: relative; }
+    #menu p     { margin: 0.5em 0; text-align: center; }
+    #menu p a   { text-decoration: none; color: black; }
+    #upcoming   { display: block; margin: 0 auto; background-color: #E0E0E0; }
+    #score      { color: blue; font-weight: bold; vertical-align: middle; }
+    #record     { color: blue; font-weight: bold; vertical-align: middle; }
+    #controls-dialog { max-width: 24em; border: 2px solid #333; border-radius: 8px; padding: 1.25em; }
+    #controls-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+    #controls-dialog h2 { margin-top: 0; }
+    #controls-dialog li { margin: 0.5em 0; }
+    #new-record { color: #e60000; font-weight: bold; font-size: 18px; text-align: center; margin: 8px 0; text-transform: uppercase; letter-spacing: 1px; animation: piscar 0.8s infinite; } @keyframes piscar { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }    #rows     { color: blue; font-weight: bold; vertical-align: middle; }
+    #stats      { position: absolute; bottom: 0em; right: 1em; }
+    #gameover { 
+      display: none; 
+      position: absolute; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%); 
+      color: #ff3333; 
+      font-family: 'Helvetica', sans-serif; 
+      font-size: 2em; 
+      font-weight: 900; 
+      text-transform: uppercase; 
+      text-shadow: 0 0 12px rgba(255, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.9); 
+      background: rgba(0, 0, 0, 0.85); 
+      padding: 15px 25px; 
+      border-radius: 8px; 
+      border: 2px solid #ff3333; 
+      letter-spacing: 2px; 
+      text-align: center; 
+      z-index: 10; 
+      animation: pulseOver 1.5s infinite ease-in-out; 
+    } 
+
+    @keyframes pulseOver { 
+      0% { transform: translate(-50%, -50%) scale(1); } 
+      50% { transform: translate(-50%, -50%) scale(1.05); } 
+      100% { transform: translate(-50%, -50%) scale(1); } 
+    }
     @media screen and (min-width:   0px) and (min-height:   0px)  { #tetris { font-size: 0.75em; width: 250px; } #menu { width: 100px; height: 200px; } #upcoming { width:  50px; height:  50px; } #canvas { width: 100px; height: 200px; } } /* 10px chunks */
     @media screen and (min-width: 400px) and (min-height: 400px)  { #tetris { font-size: 1.00em; width: 350px; } #menu { width: 150px; height: 300px; } #upcoming { width:  75px; height:  75px; } #canvas { width: 150px; height: 300px; } } /* 15px chunks */
     @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } /* 20px chunks */
@@ -29,14 +61,34 @@
   <div id="tetris">
     <div id="menu">
       <p id="start"><a href="javascript:play();">Press Space to Play.</a></p>
+      <p><button type="button" id="controls-button">Controles</button></p>
       <p><canvas id="upcoming"></canvas></p>
-      <p>score <span id="score">00000</span></p>
-      <p>rows <span id="rows">0</span></p>
+      <p>score: <span id="score">00000</span></p>
+      <p>record: <span id="record">00000</span></p>
+      <p id="new-record"></p>
+      <p>rows: <span id="rows">0</span></p>
     </div>
-    <canvas id="canvas">
-      Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
-    </canvas>
+    
+    <!-- Container exclusivo para o canvas e o game over -->
+    <div style="display: inline-block; vertical-align: top; position: relative;">
+      <canvas id="canvas">
+        Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
+      </canvas>
+      <div id="gameover">GAME OVER</div>
+    </div>
   </div>
+
+  <dialog id="controls-dialog" aria-labelledby="controls-title">
+    <h2 id="controls-title">Controles do jogo</h2>
+    <ul>
+      <li><strong>← / →:</strong> move a peça para a esquerda ou para a direita.</li>
+      <li><strong>↑:</strong> gira a peça.</li>
+      <li><strong>↓:</strong> acelera a descida da peça.</li>
+      <li><strong>Barra de espaço:</strong> inicia ou pausa o jogo.</li>
+      <li><strong>Esc:</strong> encerra a partida.</li>
+    </ul>
+    <button type="button" id="close-controls">Fechar</button>
+  </dialog>
 
   <script src="stats.js"></script>
   <script>
@@ -93,6 +145,7 @@
         current,       // the current piece
         next,          // the next piece
         score,         // the current score
+        record,        // the current record
         vscore,        // the currently displayed score (it catches up to score in small chunks - like a spinning slot machine)
         rows,          // number of completed rows in the current game
         step;          // how long before current piece drops by 1 row
@@ -200,6 +253,12 @@
     function addEvents() {
       document.addEventListener('keydown', keydown, false);
       window.addEventListener('resize', resize, false);
+      get('controls-button').addEventListener('click', function() {
+        get('controls-dialog').showModal();
+      });
+      get('close-controls').addEventListener('click', function() {
+        get('controls-dialog').close();
+      });
     }
 
     function resize(event) {
@@ -214,6 +273,9 @@
     }
 
     function keydown(ev) {
+      if (get('controls-dialog').open)
+        return;
+
       var handled = false;
       if (playing) {
         switch(ev.keyCode) {
@@ -242,11 +304,34 @@
     // GAME LOGIC
     //-------------------------------------------------------------------------
 
-    function play() { hide('start'); reset();      paused = false;  playing = true;  }
-    function pause() {show('start'); paused = true; playing = false;}
-    function restart() {hide('start'); paused = false; playing = true;}
-    function lose() { show('start'); setVisualScore(); playing = false; }
+    function play() { 
+      hide('start'); 
+      get('gameover').style.display = 'none'; // Some apenas quando o jogo começa de fato
+      reset();      
+      paused = false;  
+      playing = true;  
+    }
 
+    function pause() { 
+      show('start'); 
+      paused = true; 
+      playing = false; 
+    }
+
+    function restart() { 
+      hide('start'); 
+      get('gameover').style.display = 'none'; 
+      paused = false; 
+      playing = true; 
+    }
+    
+    function lose() { 
+      saveRecord(); 
+      show('start'); 
+      get('gameover').style.display = 'block'; // Fica visível na tela quando perde
+      setVisualScore(); 
+      playing = false; 
+    }
     function setVisualScore(n)      { vscore = n || score; invalidateScore(); }
     function setScore(n)            { score = n; setVisualScore(n);  }
     function addScore(n)            { score = score + n;   }
@@ -263,6 +348,7 @@
 
     function reset() {
       dt = 0;
+      html('new-record', '');
       clearActions();
       clearBlocks();
       clearRows();
@@ -367,6 +453,25 @@
       }
     }
 
+    function saveRecord() {
+      var recordAtual = Number(localStorage.getItem('tetrisRecord')) || 0;
+      if (score > recordAtual) {
+        record = score;
+        localStorage.setItem('tetrisRecord', record);
+        html('new-record', 'NEW RECORD !!!');
+      }
+      else {
+        record = recordAtual;
+        html('new-record', '');
+      }
+      html('record', ("00000" + record).slice(-5));
+    }
+
+    function showRecord() {
+      record = Number(localStorage.getItem('tetrisRecord')) || 0;
+      html('record', ("00000" + record).slice(-5));
+    }
+
     //-------------------------------------------------------------------------
     // RENDERING
     //-------------------------------------------------------------------------
@@ -390,11 +495,13 @@
     }
 
     function drawCourt() {
-      if (invalid.court) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (playing)
-          drawPiece(ctx, current.type, current.x, current.y, current.dir);
-        var x, y, block;
+    if (invalid.court) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (playing) {
+        drawGhostPiece(ctx, current.type, current.x, getGhostY(), current.dir); // incluir a peça fantasma
+        drawPiece(ctx, current.type, current.x, current.y, current.dir);
+      }
+      var x, y, block;
         for(y = 0 ; y < ny ; y++) {
           for (x = 0 ; x < nx ; x++) {
             if (block = getBlock(x,y))
@@ -434,6 +541,24 @@
       }
     }
 
+    // peça fantasma
+    function getGhostY() {
+    var y = current.y;
+    while (unoccupied(current.type, current.x, y + 1, current.dir)) {
+      y++;
+    }
+    return y;
+    }
+
+    function drawGhostPiece(ctx, type, x, y, dir) {
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    eachblock(type, x, y, dir, function(x, y) {
+      drawBlock(ctx, x, y, type.color);
+    });
+    ctx.restore();
+    }
+    
     function drawPiece(ctx, type, x, y, dir) {
       eachblock(type, x, y, dir, function(x, y) {
         drawBlock(ctx, x, y, type.color);
@@ -442,14 +567,25 @@
 
     function drawBlock(ctx, x, y, color) {
       ctx.fillStyle = color;
-      ctx.fillRect(x*dx, y*dy, dx, dy);
-      ctx.strokeRect(x*dx, y*dy, dx, dy)
+      
+      // Calcula o centro e o raio para desenhar o círculo dentro do espaço do bloco
+      var centerX = (x * dx) + (dx / 2);
+      var centerY = (y * dy) + (dy / 2);
+      var radius = (Math.min(dx, dy) / 2) - 1; // Subtrai 1 para a borda não encostar
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+      ctx.fill();
+      
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
     }
 
     //-------------------------------------------------------------------------
     // FINALLY, lets run the game
     //-------------------------------------------------------------------------
-
+    get('gameover').style.display = 'none'; // Garante que começa oculto
+    showRecord();
     run();
 
   </script>
