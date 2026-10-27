@@ -3,17 +3,106 @@
 <head>
   <title>Javascript Tetris</title>
   <style>
-    body      { font-family: Helvetica, sans-serif; }
-    #tetris   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; }
-    #stats    { display: inline-block; vertical-align: top; }
-    #canvas   { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
-    #menu     { display: inline-block; vertical-align: top; position: relative; }
-    #menu p   { margin: 0.5em 0; text-align: center; }
-    #menu p a { text-decoration: none; color: black; }
-    #upcoming { display: block; margin: 0 auto; background-color: #E0E0E0; }
-    #score    { color: blue; font-weight: bold; vertical-align: middle; }
-    #rows     { color: blue; font-weight: bold; vertical-align: middle; }
-    #stats    { position: absolute; bottom: 0em; right: 1em; }
+    *           { box-sizing: border-box; }
+    body        { margin: 0; padding: 1em; color: #222; font-family: Helvetica, sans-serif; background: #e9edf3; }
+    #tetris     { display: flex; align-items: flex-start; gap: 0.75em; margin: 1em auto; padding: 1em; border: 1px solid #b8c2d1; border-radius: 10px; background: #fff; box-shadow: 0 5px 16px rgba(31, 45, 61, 0.18); position: relative; width: fit-content; }
+    #menu       { flex: 0 0 auto; position: relative; padding: 0 0.35em; }
+    #menu h1    { margin: 0 0 0.2em; color: #243b64; font-size: 1.25em; letter-spacing: 0.05em; text-align: center; }
+    #menu .tagline { margin: 0 0 0.8em; color: #68778c; font-size: 0.7em; text-align: center; text-transform: uppercase; }
+    #stats      { display: inline-block; vertical-align: top; }
+    #canvas     { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 0 4px 10px rgba(31, 45, 61, 0.22); border: 2px solid #344d70; border-radius: 4px; }
+    #menu p     { margin: 0.5em 0; text-align: center; }
+    #menu p a   { color: #245da8; font-weight: bold; text-decoration: none; }
+    #menu p a:hover { text-decoration: underline; }
+    #upcoming   { display: block; margin: 0 auto; background-color: #eef2f7; border: 1px solid #b8c2d1; border-radius: 4px; }
+    #menu .stat { display: flex; justify-content: space-between; gap: 1em; padding: 0.35em 0.5em; color: #5b6878; border-bottom: 1px solid #e0e5eb; }
+    .stat-icon  { display: inline-block; width: 1.2em; margin-right: 0.25em; color: #245da8; text-align: center; }
+    #score, #record, #rows { color: #245da8; font-weight: bold; vertical-align: middle; }
+    #controls-button, #close-controls { padding: 0.4em 0.75em; color: #243b64; border: 1px solid #9eacc0; border-radius: 4px; background: #f1f4f8; cursor: pointer; }
+    #controls-button:hover, #close-controls:hover { background: #e2e8f0; }
+    #controls-dialog { max-width: 24em; border: 1px solid #9eacc0; border-radius: 8px; padding: 1.25em; background: #fff; box-shadow: 0 8px 24px rgba(31, 45, 61, 0.25); }
+    #controls-dialog::backdrop { background: rgba(31, 45, 61, 0.55); }
+    #controls-dialog h2 { margin-top: 0; color: #243b64; }
+    #alerta-perigo { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: calc(100% - 16px); padding: 8px 6px; box-sizing: border-box; background: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px; color: #ffffff; font-size: 11px; font-weight: bold; text-align: center; overflow-wrap: anywhere; z-index: 5; }
+    #alerta-perigo.nivel-atencao { background: rgba(120, 80, 0, 0.92); border-color: #facc15; color: #facc15; }
+    #alerta-perigo.nivel-perigo { background: rgba(100, 0, 0, 0.92); border-color: #ef4444; color: #ffffff; }
+    #controls-dialog li { margin: 0.5em 0; }
+    #new-record { color: #c0392b; font-weight: bold; font-size: 0.8em; text-align: center; margin: 8px 0; text-transform: uppercase; letter-spacing: 1px; animation: piscar 0.8s infinite; } @keyframes piscar { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }    #rows     { font-weight: bold; vertical-align: middle; }
+    #stats      { position: absolute; bottom: 0em; right: 1em; }
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    #gameover {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.96);
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #ffffff;
+      font-family: 'Press Start 2P', monospace, sans-serif;
+      z-index: 100;
+      box-sizing: border-box;
+      padding: 20px;
+      border-radius: 14px; /* Para acompanhar a borda arredondada do tetris */
+    }
+
+    .retro-title {
+      font-size: 1.8em;
+      color: #ff3333;
+      margin-bottom: 30px;
+      text-shadow: 0 0 15px rgba(255, 51, 51, 0.9);
+      letter-spacing: 2px;
+      animation: piscarGameOver 1s infinite alternate;
+    }
+
+    @keyframes piscarGameOver {
+      0% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .retro-info {
+      background: #111111;
+      border: 2px solid #333333;
+      padding: 18px 22px;
+      margin-bottom: 30px;
+      font-size: 0.8em;
+      text-align: left;
+      line-height: 2.2;
+      width: 280px;
+      border-radius: 6px;
+    }
+
+    .retro-info span {
+      float: right;
+      color: #00ffcc;
+    }
+
+    .retro-btn {
+      background: #00ffcc;
+      color: #000000;
+      border: none;
+      padding: 14px 24px;
+      font-family: 'Press Start 2P', monospace, sans-serif;
+      font-size: 0.75em;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 0 12px rgba(0, 255, 204, 0.5);
+    }
+
+    .retro-btn:hover {
+      background: #ffffff;
+      transform: scale(1.05);
+    }
+
+    @keyframes pulseOver { 0% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.05); } 100% { transform: translate(-50%, -50%) scale(1); }  }
     @media screen and (min-width:   0px) and (min-height:   0px)  { #tetris { font-size: 0.75em; width: 250px; } #menu { width: 100px; height: 200px; } #upcoming { width:  50px; height:  50px; } #canvas { width: 100px; height: 200px; } } /* 10px chunks */
     @media screen and (min-width: 400px) and (min-height: 400px)  { #tetris { font-size: 1.00em; width: 350px; } #menu { width: 150px; height: 300px; } #upcoming { width:  75px; height:  75px; } #canvas { width: 150px; height: 300px; } } /* 15px chunks */
     @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } /* 20px chunks */
@@ -28,15 +117,44 @@
 
   <div id="tetris">
     <div id="menu">
+      <h1>Neon Tetris</h1>
+      <p class="tagline">Stack. Clear. Survive.</p>
       <p id="start"><a href="javascript:play();">Press Space to Play.</a></p>
+      <p><button type="button" id="controls-button">Controles</button></p>
       <p><canvas id="upcoming"></canvas></p>
-      <p>score <span id="score">00000</span></p>
-      <p>rows <span id="rows">0</span></p>
+      <p class="stat"><span><span class="stat-icon" aria-hidden="true">★</span>Score</span><span id="score">00000</span></p>
+      <p class="stat"><span><span class="stat-icon" aria-hidden="true">🏆</span>Record</span><span id="record">00000</span></p>
+      <p id="new-record"></p>
+      <p class="stat"><span><span class="stat-icon" aria-hidden="true">▦</span>Linhas</span><span id="rows">0</span></p>
     </div>
-    <canvas id="canvas">
-      Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
-    </canvas>
+    
+    <div style="display: inline-block; vertical-align: top; position: relative;">
+      <canvas id="canvas">
+        Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
+      </canvas>
+      </div>
+      <div id="gameover">
+        <div class="retro-title">GAME OVER</div>
+        <div class="retro-info">
+          <p>SCORE : <span id="final-score">00000</span></p>
+          <p>RECORD: <span id="final-record">00000</span></p>
+        </div>
+        <a href="#" class="retro-btn" onclick="reiniciarJogo(); return false;">JOGAR NOVAMENTE</a>
+      </div>
+      <div id="alerta-perigo" role="status" aria-live="polite">CUIDADO! A PILHA ESTÁ ALTA!</div>
   </div>
+
+  <dialog id="controls-dialog" aria-labelledby="controls-title">
+    <h2 id="controls-title">Controles do jogo</h2>
+    <ul>
+      <li><strong>← / →:</strong> move a peça para a esquerda ou para a direita.</li>
+      <li><strong>↑:</strong> gira a peça.</li>
+      <li><strong>↓:</strong> acelera a descida da peça.</li>
+      <li><strong>Barra de espaço:</strong> inicia ou pausa o jogo.</li>
+      <li><strong>Esc:</strong> encerra a partida.</li>
+    </ul>
+    <button type="button" id="close-controls">Fechar</button>
+  </dialog>
 
   <script src="stats.js"></script>
   <script>
@@ -93,6 +211,7 @@
         current,       // the current piece
         next,          // the next piece
         score,         // the current score
+        record,        // the current record
         vscore,        // the currently displayed score (it catches up to score in small chunks - like a spinning slot machine)
         rows,          // number of completed rows in the current game
         step;          // how long before current piece drops by 1 row
@@ -200,6 +319,12 @@
     function addEvents() {
       document.addEventListener('keydown', keydown, false);
       window.addEventListener('resize', resize, false);
+      get('controls-button').addEventListener('click', function() {
+        get('controls-dialog').showModal();
+      });
+      get('close-controls').addEventListener('click', function() {
+        get('controls-dialog').close();
+      });
     }
 
     function resize(event) {
@@ -214,6 +339,9 @@
     }
 
     function keydown(ev) {
+      if (get('controls-dialog').open)
+        return;
+
       var handled = false;
       if (playing) {
         switch(ev.keyCode) {
@@ -242,11 +370,48 @@
     // GAME LOGIC
     //-------------------------------------------------------------------------
 
-    function play() { hide('start'); reset();      paused = false;  playing = true;  }
-    function pause() {show('start'); paused = true; playing = false;}
-    function restart() {hide('start'); paused = false; playing = true;}
-    function lose() { show('start'); setVisualScore(); playing = false; }
+    function play() { 
+      hide('start'); 
+      get('gameover').style.display = 'none'; // Some apenas quando o jogo começa de fato
+      reset();      
+      paused = false;  
+      playing = true;  
+    }
 
+    function pause() { 
+      show('start'); 
+      paused = true; 
+      playing = false; 
+    }
+
+    function restart() { 
+      hide('start'); 
+      get('gameover').style.display = 'none'; 
+      paused = false; 
+      playing = true; 
+    }
+    
+    function lose() {
+      saveRecord();
+      show('start');
+
+      // Atualiza as pontuações finais na tela cheia
+      get('final-score').innerText = ("00000" + Math.floor(score)).slice(-5);
+      var recordAtual = Number(localStorage.getItem('tetrisRecord')) || 0;
+      get('final-record').innerText = ("00000" + recordAtual).slice(-5);
+
+      // Exibe preenchendo o espaço todo
+      get('gameover').style.display = 'flex';
+
+      setVisualScore();
+      playing = false;
+    }
+
+    // Função funcional ligada ao botão de reiniciar
+    function reiniciarJogo() {
+      get('gameover').style.display = 'none';
+      play();
+    }
     function setVisualScore(n)      { vscore = n || score; invalidateScore(); }
     function setScore(n)            { score = n; setVisualScore(n);  }
     function addScore(n)            { score = score + n;   }
@@ -255,6 +420,8 @@
     function setRows(n)             { rows = n; step = Math.max(speed.min, speed.start - (speed.decrement*rows)); invalidateRows(); }
     function addRows(n)             { setRows(rows + n); }
     function getBlock(x,y)          { return (blocks && blocks[x] ? blocks[x][y] : null); }
+    function verificarNivelPerigo() { var maiorAltura = 0; for (var x = 0; x < nx; x++) { for (var y = 0; y < ny; y++) { if (getBlock(x, y)) { var altura = ny - y; if (altura > maiorAltura) maiorAltura = altura; } } } return maiorAltura; }
+    function atualizarAlertaPerigo(){ var alerta = get('alerta-perigo'); if (!alerta) return; if (!playing) { alerta.style.display = 'none'; return; } var altura = verificarNivelPerigo(); alerta.classList.remove('nivel-atencao', 'nivel-perigo'); if (altura >= 15) { alerta.textContent = '🚨 PERIGO! A PILHA ESTÁ MUITO ALTA!'; alerta.classList.add('nivel-perigo'); alerta.style.display = 'block'; } else if (altura >= 11) { alerta.textContent = '⚠️ ATENÇÃO! CUIDADO COM O TOPO!'; alerta.classList.add('nivel-atencao'); alerta.style.display = 'block'; } else { alerta.style.display = 'none'; } }
     function setBlock(x,y,type)     { blocks[x] = blocks[x] || []; blocks[x][y] = type; invalidate(); }
     function clearBlocks()          { blocks = []; invalidate(); }
     function clearActions()         { actions = []; }
@@ -263,6 +430,9 @@
 
     function reset() {
       dt = 0;
+      html('new-record', '');
+      get('alerta-perigo').style.display = 'none';
+      get('alerta-perigo').classList.remove('nivel-atencao', 'nivel-perigo');
       clearActions();
       clearBlocks();
       clearRows();
@@ -367,6 +537,25 @@
       }
     }
 
+    function saveRecord() {
+      var recordAtual = Number(localStorage.getItem('tetrisRecord')) || 0;
+      if (score > recordAtual) {
+        record = score;
+        localStorage.setItem('tetrisRecord', record);
+        html('new-record', 'NEW RECORD !!!');
+      }
+      else {
+        record = recordAtual;
+        html('new-record', '');
+      }
+      html('record', ("00000" + record).slice(-5));
+    }
+
+    function showRecord() {
+      record = Number(localStorage.getItem('tetrisRecord')) || 0;
+      html('record', ("00000" + record).slice(-5));
+    }
+
     //-------------------------------------------------------------------------
     // RENDERING
     //-------------------------------------------------------------------------
@@ -390,19 +579,22 @@
     }
 
     function drawCourt() {
-      if (invalid.court) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (playing)
-          drawPiece(ctx, current.type, current.x, current.y, current.dir);
-        var x, y, block;
+    if (invalid.court) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (playing) {
+        drawGhostPiece(ctx, current.type, current.x, getGhostY(), current.dir); // incluir a peça fantasma
+        drawPiece(ctx, current.type, current.x, current.y, current.dir);
+      }
+      var x, y, block;
         for(y = 0 ; y < ny ; y++) {
           for (x = 0 ; x < nx ; x++) {
             if (block = getBlock(x,y))
               drawBlock(ctx, x, y, block.color);
           }
         }
-        ctx.strokeRect(0, 0, nx*dx - 1, ny*dy - 1); // court boundary
+        ctx.strokeRect(0, 0, nx * dx - 1, ny * dy - 1);
         invalid.court = false;
+        atualizarAlertaPerigo();
       }
     }
 
@@ -434,6 +626,26 @@
       }
     }
 
+    // peça fantasma
+    function getGhostY() {
+    var y = current.y;
+    while (unoccupied(current.type, current.x, y + 1, current.dir)) {
+      y++;
+    }
+    return y;
+    }
+
+    function drawGhostPiece(ctx, type, x, y, dir) {
+      ctx.save();
+      // Pisca conforme o tempo passa
+      var pulse = 0.3 + Math.sin(Date.now() / 100) * 0.2;
+      ctx.globalAlpha = pulse;
+      eachblock(type, x, y, dir, function(x, y) {
+        drawBlock(ctx, x, y, type.color);
+      });
+      ctx.restore();
+    }
+    
     function drawPiece(ctx, type, x, y, dir) {
       eachblock(type, x, y, dir, function(x, y) {
         drawBlock(ctx, x, y, type.color);
@@ -449,7 +661,8 @@
     //-------------------------------------------------------------------------
     // FINALLY, lets run the game
     //-------------------------------------------------------------------------
-
+    get('gameover').style.display = 'none'; // Garante que começa oculto
+    showRecord();
     run();
 
   </script>
