@@ -1,41 +1,527 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+  <meta charset="utf-8">
   <title>Javascript Tetris</title>
   <style>
-    body      { font-family: Helvetica, sans-serif; }
-    #tetris   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; }
-    #stats    { display: inline-block; vertical-align: top; }
-    #canvas   { display: inline-block; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
-    #menu     { display: inline-block; vertical-align: top; position: relative; }
-    #menu p   { margin: 0.5em 0; text-align: center; }
-    #menu p a { text-decoration: none; color: black; }
-    #upcoming { display: block; margin: 0 auto; background-color: #E0E0E0; }
-    #score    { color: blue; font-weight: bold; vertical-align: middle; }
-    #rows     { color: blue; font-weight: bold; vertical-align: middle; }
-    #stats    { position: absolute; bottom: 0em; right: 1em; }
-    @media screen and (min-width:   0px) and (min-height:   0px)  { #tetris { font-size: 0.75em; width: 250px; } #menu { width: 100px; height: 200px; } #upcoming { width:  50px; height:  50px; } #canvas { width: 100px; height: 200px; } } /* 10px chunks */
-    @media screen and (min-width: 400px) and (min-height: 400px)  { #tetris { font-size: 1.00em; width: 350px; } #menu { width: 150px; height: 300px; } #upcoming { width:  75px; height:  75px; } #canvas { width: 150px; height: 300px; } } /* 15px chunks */
-    @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } /* 20px chunks */
-    @media screen and (min-width: 600px) and (min-height: 600px)  { #tetris { font-size: 1.50em; width: 550px; } #menu { width: 250px; height: 500px; } #upcoming { width: 125px; height: 125px; } #canvas { width: 250px; height: 500px; } } /* 25px chunks */
-    @media screen and (min-width: 700px) and (min-height: 700px)  { #tetris { font-size: 1.75em; width: 650px; } #menu { width: 300px; height: 600px; } #upcoming { width: 150px; height: 150px; } #canvas { width: 300px; height: 600px; } } /* 30px chunks */
-    @media screen and (min-width: 800px) and (min-height: 800px)  { #tetris { font-size: 2.00em; width: 750px; } #menu { width: 350px; height: 700px; } #upcoming { width: 175px; height: 175px; } #canvas { width: 350px; height: 700px; } } /* 35px chunks */
-    @media screen and (min-width: 900px) and (min-height: 900px)  { #tetris { font-size: 2.25em; width: 850px; } #menu { width: 400px; height: 800px; } #upcoming { width: 200px; height: 200px; } #canvas { width: 400px; height: 800px; } } /* 40px chunks */
+    :root {
+      --page-background: #FFFFFF;
+      --panel-background: #F8F8F8;
+      --text-color: #000000;
+      --border-color: #000000;
+      --canvas-background: url(texture.jpg);
+      --canvas-shadow: #999999;
+      --upcoming-background: #E0E0E0;
+      --button-background: #FFFFFF;
+    }
+
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: var(--page-background);
+      color: var(--text-color);
+    }
+
+    body.dark-mode {
+      --page-background: #121212;
+      --panel-background: #242424;
+      --text-color: #F5F5F5;
+      --border-color: #F5F5F5;
+      --canvas-background: #1B1B1B;
+      --canvas-shadow: #000000;
+      --upcoming-background: #333333;
+      --button-background: #333333;
+    }
+
+    #tetris {
+      position: relative;
+      margin: 1em auto;
+      padding: 1em;
+      border: 4px solid var(--border-color);
+      border-radius: 10px;
+      background-color: var(--panel-background);
+    }
+
+    #stats {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    #canvas {
+      display: inline-block;
+      vertical-align: top;
+      background: var(--canvas-background);
+      box-shadow: 10px 10px 10px var(--canvas-shadow);
+      border: 2px solid var(--border-color);
+    }
+
+    #menu {
+      display: inline-block;
+      vertical-align: top;
+      position: relative;
+    }
+
+    #menu p {
+      margin: 0.5em 0;
+      text-align: center;
+      color: var(--text-color);
+    }
+
+    #menu p a {
+      text-decoration: none;
+      color: var(--text-color);
+    }
+
+    #upcoming {
+      display: block;
+      margin: 0 auto;
+      background-color: var(--upcoming-background);
+    }
+
+    #theme-toggle {
+      position: absolute;
+      top: 0.5em;
+      right: 0.5em;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      background: var(--button-background);
+      color: var(--text-color);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      padding: 0;
+    }
+
+    #score {
+      color: blue;
+      font-weight: bold;
+      vertical-align: middle;
+    }
+
+    #rows {
+      color: blue;
+      font-weight: bold;
+      vertical-align: middle;
+    }
+
+    #court {
+      display: inline-block;
+      vertical-align: top;
+      position: relative;
+    }
+
+    #msg {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      width: 80%;
+      padding: 0.4em 0.2em;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #FFF;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 10;
+    }
+
+    #msg.bem {
+      background: #27ae60;
+      border: 3px solid #1e8449;
+    }
+
+    #msg.parabens {
+      background: #f39c12;
+      border: 3px solid #d35400;
+    }
+
+    #msg.perfeito {
+      background: linear-gradient(90deg, #e74c3c, #f39c12, #f1c40f, #2ecc71, #3498db, #9b59b6);
+      border: 3px solid #FFF;
+    }
+
+    #msg.meta {
+      background: #8e44ad;
+      border: 3px solid gold;
+      font-size: 1.2em;
+    }
+
+    #msg.animar {
+      animation: aparecer 1.6s ease-out forwards;
+    }
+
+    #msg.meta.animar {
+      animation: aparecer 2.2s ease-out forwards, brilho 0.3s ease-in-out 6 alternate;
+    }
+
+    #canvas.piscar {
+      animation: piscar 0.4s ease-out;
+    }
+
+    @keyframes aparecer {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.2) rotate(-10deg);
+      }
+
+      15% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.25) rotate(3deg);
+      }
+
+      25% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+      }
+
+      75% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -180%) scale(0.8);
+      }
+    }
+
+    @keyframes brilho {
+      from {
+        box-shadow: 0 0 5px 2px gold;
+      }
+
+      to {
+        box-shadow: 0 0 30px 10px gold;
+      }
+    }
+
+    @keyframes piscar {
+      0% {
+        box-shadow: 0 0 30px 8px #FFF;
+      }
+
+      100% {
+        box-shadow: 10px 10px 10px var(--canvas-shadow);
+      }
+    }
+
+    #stats {
+      position: absolute;
+      bottom: 0em;
+      right: 1em;
+    }
+
+    #high-score {
+      color: green;
+      font-weight: bold;
+      vertical-align: middle;
+    }
+
+    @media screen and (min-width: 0px) and (min-height: 0px) {
+      #tetris {
+        font-size: 0.75em;
+        width: 250px;
+      }
+
+      #menu {
+        width: 100px;
+        height: 200px;
+      }
+
+      #upcoming {
+        width: 50px;
+        height: 50px;
+      }
+
+      #canvas {
+        width: 100px;
+        height: 200px;
+      }
+    }
+
+    /* 10px chunks */
+    @media screen and (min-width: 400px) and (min-height: 400px) {
+      #tetris {
+        font-size: 1.00em;
+        width: 350px;
+      }
+
+      #menu {
+        width: 150px;
+        height: 300px;
+      }
+
+      #upcoming {
+        width: 75px;
+        height: 75px;
+      }
+
+      #canvas {
+        width: 150px;
+        height: 300px;
+      }
+    }
+
+    /* 15px chunks */
+    @media screen and (min-width: 500px) and (min-height: 500px) {
+      #tetris {
+        font-size: 1.25em;
+        width: 450px;
+      }
+
+      #menu {
+        width: 200px;
+        height: 400px;
+      }
+
+      #upcoming {
+        width: 100px;
+        height: 100px;
+      }
+
+      #canvas {
+        width: 200px;
+        height: 400px;
+      }
+    }
+
+    /* 20px chunks */
+    @media screen and (min-width: 600px) and (min-height: 600px) {
+      #tetris {
+        font-size: 1.50em;
+        width: 550px;
+      }
+
+      #menu {
+        width: 250px;
+        height: 500px;
+      }
+
+      #upcoming {
+        width: 125px;
+        height: 125px;
+      }
+
+      #canvas {
+        width: 250px;
+        height: 500px;
+      }
+    }
+
+    /* 25px chunks */
+    @media screen and (min-width: 700px) and (min-height: 700px) {
+      #tetris {
+        font-size: 1.75em;
+        width: 650px;
+      }
+
+      #menu {
+        width: 300px;
+        height: 600px;
+      }
+
+      #upcoming {
+        width: 150px;
+        height: 150px;
+      }
+
+      #canvas {
+        width: 300px;
+        height: 600px;
+      }
+    }
+
+    /* 30px chunks */
+    @media screen and (min-width: 800px) and (min-height: 800px) {
+      #tetris {
+        font-size: 2.00em;
+        width: 750px;
+      }
+
+      #menu {
+        width: 350px;
+        height: 700px;
+      }
+
+      #upcoming {
+        width: 175px;
+        height: 175px;
+      }
+
+      #canvas {
+        width: 350px;
+        height: 700px;
+      }
+    }
+
+    /* 35px chunks */
+    @media screen and (min-width: 900px) and (min-height: 900px) {
+      #tetris {
+        font-size: 2.25em;
+        width: 850px;
+      }
+
+      #menu {
+        width: 400px;
+        height: 800px;
+      }
+
+      #upcoming {
+        width: 200px;
+        height: 200px;
+      }
+
+      #canvas {
+        width: 400px;
+        height: 800px;
+      }
+    }
+
+    /* 40px chunks */
+
+    /* Style do modal de confirmação de reinício do jogo */
+    #restart-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.65);
+    }
+
+    #restart-modal.visible {
+      display: flex;
+    }
+
+    #restart-dialog {
+      width: min(90%, 360px);
+      padding: 1.5em;
+      border: 2px solid #333;
+      border-radius: 12px;
+      background-color: #F8F8F8;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      color: #222;
+      text-align: center;
+    }
+
+    #restart-dialog h2 {
+      margin: 0 0 0.75em;
+      color: #333;
+      font-size: 1.25em;
+    }
+
+    #restart-dialog p {
+      margin: 0 0 1.5em;
+    }
+
+    #restart-dialog button {
+      min-width: 110px;
+      margin: 0 0.35em;
+      padding: 0.65em 1em;
+      border: 0;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-weight: bold;
+    }
+
+    #restart-cancel {
+      background-color: #777;
+    }
+
+    #restart-confirm {
+      background-color: #c0392b;
+    }
+
+    #restart-dialog button:hover {
+      filter: brightness(0.9);
+    }
+
+    .pieces-title {
+      display: inline-block;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.3rem;
+      text-transform: uppercase;
+
+      color: #b8e986;
+      background: linear-gradient(180deg,
+          #a719db 0%,
+          #bf00ff 45%,
+          #300049 100%);
+
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      text-shadow: 0 0 12px rgba(91, 190, 91, 0.35);
+
+      animation: forest-blink 1.8s ease-in-out infinite;
+    }
+
+    @keyframes forest-blink {
+
+      0%,
+      100% {
+        opacity: 1;
+        filter: brightness(1);
+      }
+
+      50% {
+        opacity: 0.55;
+        filter: brightness(1.4);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pieces-title {
+        animation: none;
+        opacity: 1;
+        filter: none;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-  <div id="tetris">
+ <div id="tetris">
+    <button id="theme-toggle" type="button" aria-label="Ativar modo noturno">&#9790;</button>
     <div id="menu">
-      <p id="start"><a href="javascript:play();">Press Space to Play.</a></p>
+      <p id="start"><a href="javascript:play();">Pressione Espaço para Jogar.</a></p>
       <p><canvas id="upcoming"></canvas></p>
-      <p>score <span id="score">00000</span></p>
-      <p>rows <span id="rows">0</span></p>
+
+      <p>pontuação <span id="score">00000</span></p>
+      <p>recorde de pontuação <span id="high-score">00000</span></p>
+      <p>linhas <span id="rows">0</span></p>
+      <p>peças <span id="pieces">0</span></p>
+      <p>meta <span id="meta">5</span></p>
     </div>
-    <canvas id="canvas">
-      Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
-    </canvas>
+    <div id="court">
+      <canvas id="canvas">
+        Desculpe, este jogo não pode ser executado porque o seu navegador não suporta o elemento &lt;canvas&gt;
+      </canvas>
+      <div id="msg"></div>
+    </div>
+  </div>
+
+  <div id="restart-modal" role="dialog" aria-modal="true" aria-labelledby="restart-title">
+    <div id="restart-dialog">
+      <h2 id="restart-title">Reiniciar partida?</h2>
+      <p>Quer mesmo reiniciar a partida?</p>
+      <button id="restart-cancel" type="button">Cancelar</button>
+      <button id="restart-confirm" type="button">Reiniciar</button>
+    </div>
   </div>
 
   <script src="stats.js"></script>
@@ -45,93 +531,113 @@
     // base helper methods
     //-------------------------------------------------------------------------
 
-    function get(id)        { return document.getElementById(id);  }
-    function hide(id)       { get(id).style.visibility = 'hidden'; }
-    function show(id)       { get(id).style.visibility = null;     }
-    function html(id, html) { get(id).innerHTML = html;            }
+    function get(id) { return document.getElementById(id); }
+    function hide(id) { get(id).style.visibility = 'hidden'; }
+    function show(id) { get(id).style.visibility = null; }
+    function html(id, html) { get(id).innerHTML = html; }
 
-    function timestamp()           { return new Date().getTime();                             }
-    function random(min, max)      { return (min + (Math.random() * (max - min)));            }
-    function randomChoice(choices) { return choices[Math.round(random(0, choices.length-1))]; }
+    function timestamp() { return new Date().getTime(); }
+    function random(min, max) { return (min + (Math.random() * (max - min))); }
+    function randomChoice(choices) { return choices[Math.round(random(0, choices.length - 1))]; }
 
     if (!window.requestAnimationFrame) { // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
       window.requestAnimationFrame = window.webkitRequestAnimationFrame ||
-                                     window.mozRequestAnimationFrame    ||
-                                     window.oRequestAnimationFrame      ||
-                                     window.msRequestAnimationFrame     ||
-                                     function(callback, element) {
-                                       window.setTimeout(callback, 1000 / 60);
-                                     }
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (callback, element) {
+          window.setTimeout(callback, 1000 / 60);
+        }
     }
 
     //-------------------------------------------------------------------------
     // game constants
     //-------------------------------------------------------------------------
 
-    var KEY     = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40 },
-        DIR     = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3, MIN: 0, MAX: 3 },
-        stats   = new Stats(),
-        canvas  = get('canvas'),
-        ctx     = canvas.getContext('2d'),
-        ucanvas = get('upcoming'),
-        uctx    = ucanvas.getContext('2d'),
-        speed   = { start: 0.6, decrement: 0.005, min: 0.1 }, // how long before piece drops by 1 row (seconds)
-        nx      = 10, // width of tetris court (in blocks)
-        ny      = 20, // height of tetris court (in blocks)
-        nu      = 5;  // width/height of upcoming preview (in blocks)
+    var KEY = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, R: 82 },
+      DIR = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3, MIN: 0, MAX: 3 },
+      stats = new Stats(),
+      canvas = get('canvas'),
+      ctx = canvas.getContext('2d'),
+      ucanvas = get('upcoming'),
+      uctx = ucanvas.getContext('2d'),
+      speed = { start: 0.6, decrement: 0.005, min: 0.1 }, // how long before piece drops by 1 row (seconds)
+      nx = 10, // width of tetris court (in blocks)
+      ny = 20, // height of tetris court (in blocks)
+      nu = 5;  // width/height of upcoming preview (in blocks)
 
     //-------------------------------------------------------------------------
     // game variables (initialized during reset)
     //-------------------------------------------------------------------------
 
     var dx, dy,        // pixel size of a single tetris block
-        blocks,        // 2 dimensional array (nx*ny) representing tetris court - either empty block or occupied by a 'piece'
-        actions,       // queue of user actions (inputs)
-        playing,       // true|false - game is in progress
-        paused,        // true|false - game is currently paued (to differentiate need for reset)
-        dt,            // time since starting this game
-        current,       // the current piece
-        next,          // the next piece
-        score,         // the current score
-        vscore,        // the currently displayed score (it catches up to score in small chunks - like a spinning slot machine)
-        rows,          // number of completed rows in the current game
-        step;          // how long before current piece drops by 1 row
+      blocks,        // 2 dimensional array (nx*ny) representing tetris court - either empty block or occupied by a 'piece'
+      actions,       // queue of user actions (inputs)
+      playing,       // true|false - game is in progress
+      paused,        // true|false - game is currently paued (to differentiate need for reset)
+      dt,            // time since starting this game
+      current,       // the current piece
+      next,          // the next piece
+      score,         // the current score
+      vscore,        // the currently displayed score (it catches up to score in small chunks - like a spinning slot machine)
+      rows,          // number of completed rows in the current game
+      step;          // how long before current piece drops by 1 row
+
+    var highScore = Number(localStorage.getItem('highScore')) || 0;
+    var darkMode = false;
+    var pieceCount = 0;
+
+    // mensagens que aparecem quando completa linha
+    var mensagens = ['Muito bem!', 'Parabéns!', 'Perfeito!'];
+    var tipos = ['bem', 'parabens', 'perfeito'];
+    var meta = 5;
 
     //-------------------------------------------------------------------------
     // tetris pieces
     //
     // blocks: each element represents a rotation of the piece (0, 90, 180, 270)
-    //         each element is a 16 bit integer where the 16 bits represent
-    //         a 4x4 set of blocks, e.g. j.blocks[0] = 0x44C0
+    //         each element is an integer whose `size*size` bits represent a
+    //         `size`x`size` grid of blocks (bit mais significativo = canto
+    //         superior esquerdo; cada linha ocupa `size` bits), ex.: uma peça
+    //         `size` 3 "j" com células em (0,1),(1,1),(2,0),(2,1) vira
     //
-    //             0100 = 0x4 << 3 = 0x4000
-    //             0100 = 0x4 << 2 = 0x0400
-    //             1100 = 0xC << 1 = 0x00C0
-    //             0000 = 0x0 << 0 = 0x0000
+    //             010 = 0x2 << 6 = 0x080
+    //             010 = 0x2 << 3 = 0x010
+    //             110 = 0x6 << 0 = 0x006
     //                               ------
-    //                               0x44C0
+    //                               0x096
     //
     //-------------------------------------------------------------------------
 
-    var i = { size: 4, blocks: [0x0F00, 0x2222, 0x00F0, 0x4444], color: 'purple'   };
-    var j = { size: 3, blocks: [0x44C0, 0x8E00, 0x6440, 0x0E20], color: 'pink'   };
-    var l = { size: 3, blocks: [0x4460, 0x0E80, 0xC440, 0x2E00], color: 'salmon' };
-    var o = { size: 2, blocks: [0xCC00, 0xCC00, 0xCC00, 0xCC00], color: 'lime' };
-    var s = { size: 3, blocks: [0x06C0, 0x8C40, 0x6C00, 0x4620], color: 'teal'  };
-    var t = { size: 3, blocks: [0x0E40, 0x4C40, 0x4E00, 0x4640], color: 'coral' };
-    var z = { size: 3, blocks: [0x0C60, 0x4C80, 0xC600, 0x2640], color: 'olive'    };
+    var i = { size: 4, blocks: [0x0F00, 0x2222, 0x00F0, 0x4444], color: 'purple' };
+    var j = { size: 3, blocks: [0x96, 0x138, 0xD2, 0x39], color: 'pink' };
+    var l = { size: 3, blocks: [0x93, 0x3C, 0x192, 0x78], color: 'salmon' };
+    var o = { size: 2, blocks: [0xF, 0xF, 0xF, 0xF], color: 'lime' };
+    var s = { size: 3, blocks: [0x1E, 0x132, 0xF0, 0x99], color: 'teal' };
+    var t = { size: 3, blocks: [0x3A, 0xB2, 0xB8, 0x9A], color: 'coral' };
+    var z = { size: 3, blocks: [0x33, 0xB4, 0x198, 0x5A], color: 'olive' };
+
+    // peças adicionais
+    var w = { size: 3, blocks: [0x1C8, 0x4B, 0x27, 0x1A4], color: 'gold' }; // L horizontal: 2 para o lado e 3 na linha
+    var q = { size: 3, blocks: [0x1FF, 0x1FF, 0x1FF, 0x1FF], color: 'cyan' }; // quadrado 3x3 (9 blocos)
+    var m = { size: 3, blocks: [0x127, 0x1E4, 0x1C9, 0x4F], color: 'brown' }; // L grande: 3 na coluna e 3 na linha
+    var d = { size: 2, blocks: [0xC, 0x5, 0x3, 0xA], color: 'magenta' }; // linha de 2
+    var v = { size: 5, blocks: [0x1F00000, 0x108421, 0x1F, 0x1084210], color: 'indigo' }; // linha de 5
+    var r = { size: 4, blocks: [0xCCCC, 0xFF00, 0x3333, 0xFF], color: 'orange' }; // retangulo 2 colunas x 4 linhas
+    var g = { size: 3, blocks: [0x1D2, 0x79, 0x97, 0x13C], color: 'red' }; // T grande
+    var linha3 = { size: 3, blocks: [0x1C0, 0x49, 0x7, 0x124], color: 'steelblue' }; // linha de 3
 
     //------------------------------------------------
     // do the bit manipulation and iterate through each
     // occupied block (x,y) for a given piece
     //------------------------------------------------
     function eachblock(type, x, y, dir, fn) {
-      var bit, result, row = 0, col = 0, blocks = type.blocks[dir];
-      for(bit = 0x8000 ; bit > 0 ; bit = bit >> 1) {
+      var bit, row = 0, col = 0, blocks = type.blocks[dir], size = type.size;
+      for (bit = 1 << (size * size - 1); bit > 0; bit = bit >> 1) {
         if (blocks & bit) {
           fn(x + col, y + row);
         }
-        if (++col === 4) {
+        if (++col === size) {
           col = 0;
           ++row;
         }
@@ -143,8 +649,8 @@
     //-----------------------------------------------------
     function occupied(type, x, y, dir) {
       var result = false
-      eachblock(type, x, y, dir, function(x, y) {
-        if ((x < 0) || (x >= nx) || (y < 0) || (y >= ny) || getBlock(x,y))
+      eachblock(type, x, y, dir, function (x, y) {
+        if ((x < 0) || (x >= nx) || (y < 0) || (y >= ny) || getBlock(x, y))
           result = true;
       });
       return result;
@@ -161,8 +667,10 @@
     var pieces = [];
     function randomPiece() {
       if (pieces.length == 0)
-        pieces = [i,i,i,i,j,j,j,j,l,l,l,l,o,o,o,o,s,s,s,s,t,t,t,t,z,z,z,z];
-      var type = pieces.splice(random(0, pieces.length-1), 1)[0];
+        pieces = [i, i, i, i, j, j, j, j, l, l, l, l, o, o, o, o, s, s, s, s, t, t, t, t, z, z, z, z,
+          w, w, w, w, q, q, q, q, m, m, m, m, d, d, d, d, v, v, v, v, r, r, r, r, g, g, g, g,
+          linha3, linha3, linha3, linha3];
+      var type = pieces.splice(random(0, pieces.length - 1), 1)[0];
       return { type: type, dir: DIR.UP, x: Math.round(random(0, nx - type.size)), y: 0 };
     }
 
@@ -197,17 +705,30 @@
       get('menu').appendChild(stats.domElement);
     }
 
+    function toggleTheme() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
+      html('theme-toggle', darkMode ? '&#9728;' : '&#9790;');
+      get('theme-toggle').setAttribute('aria-label', darkMode ? 'Desativar modo noturno' : 'Ativar modo noturno');
+      invalidate();
+      invalidateNext();
+    }
+
     function addEvents() {
       document.addEventListener('keydown', keydown, false);
       window.addEventListener('resize', resize, false);
+      get('theme-toggle').addEventListener('click', toggleTheme, false);
+
+      get('restart-cancel').addEventListener('click', closeRestartModal, false);
+      get('restart-confirm').addEventListener('click', confirmRestart, false);
     }
 
     function resize(event) {
-      canvas.width   = canvas.clientWidth;  // set canvas logical size equal to its physical size
-      canvas.height  = canvas.clientHeight; // (ditto)
-      ucanvas.width  = ucanvas.clientWidth;
+      canvas.width = canvas.clientWidth;  // set canvas logical size equal to its physical size
+      canvas.height = canvas.clientHeight; // (ditto)
+      ucanvas.width = ucanvas.clientWidth;
       ucanvas.height = ucanvas.clientHeight;
-      dx = canvas.width  / nx; // pixel size of a single tetris block
+      dx = canvas.width / nx; // pixel size of a single tetris block
       dy = canvas.height / ny; // (ditto)
       invalidate();
       invalidateNext();
@@ -215,51 +736,102 @@
 
     function keydown(ev) {
       var handled = false;
-      if (playing) {
-        switch(ev.keyCode) {
-          case KEY.LEFT:   actions.push(DIR.LEFT);  handled = true; break;
-          case KEY.RIGHT:  actions.push(DIR.RIGHT); handled = true; break;
-          case KEY.UP:     actions.push(DIR.UP);    handled = true; break;
-          case KEY.DOWN:   actions.push(DIR.DOWN);  handled = true; break;
-          case KEY.ESC:    lose();                  handled = true; break;
-          case KEY.SPACE:  pause();                 handled = true; break;
+
+      if (document.activeElement &&
+        (document.activeElement.tagName === 'INPUT' ||
+          document.activeElement.tagName === 'TEXTAREA' ||
+          document.activeElement.isContentEditable)) {
+        return;
+      }
+
+      if (ev.keyCode == KEY.LEFT || ev.keyCode == KEY.RIGHT || ev.keyCode == KEY.UP || ev.keyCode == KEY.DOWN) {
+        if (!paused) {
+          switch (ev.keyCode) {
+            case KEY.LEFT: actions.push(DIR.LEFT); handled = true; break;
+            case KEY.RIGHT: actions.push(DIR.RIGHT); handled = true; break;
+            case KEY.UP: actions.push(DIR.UP); handled = true; break;
+            case KEY.DOWN: actions.push(DIR.DOWN); handled = true; break;
+            case KEY.ESC: lose(); handled = true; break;
+            case KEY.SPACE: pause(); handled = true; break;
+            case KEY.R: requestRestart(); handled = true; break;
+          }
         }
       }
       else if (ev.keyCode == KEY.SPACE) {
-        if(paused) {
-            restart();
-            handled = true;
-          }else{
-            play();
-            handled = true;
-          }
+        if (paused) {
+          restart();
+        } else if (playing) {
+          pause();
+        } else {
+          play();
+        }
+
+        handled = true;
       }
+      else if (ev.keyCode == KEY.R) {
+        requestRestart();
+        handled = true;
+      }
+
       if (handled)
-        ev.preventDefault(); // prevent arrow keys from scrolling the page (supported in IE9+ and all other browsers)
+        ev.preventDefault();
+    }
+
+    // Função de Reinicio Rápido do Jogo (Quick-resart)
+    function requestRestart() {
+      if (!playing && !paused) return;
+
+      get('restart-modal').classList.add('visible');
+      get('restart-confirm').focus();
+    }
+
+    function closeRestartModal() {
+      get('restart-modal').classList.remove('visible');
+    }
+
+    function confirmRestart() {
+      closeRestartModal();
+      restartGame();
+    }
+
+    function restartGame() {
+      reset();
+      hide('start');
+      paused = false;
+      playing = true;
     }
 
     //-------------------------------------------------------------------------
     // GAME LOGIC
     //-------------------------------------------------------------------------
 
-    function play() { hide('start'); reset();      paused = false;  playing = true;  }
-    function pause() {show('start'); paused = true; playing = false;}
-    function restart() {hide('start'); paused = false; playing = true;}
-    function lose() { show('start'); setVisualScore(); playing = false; }
+    function play() { hide('start'); reset(); paused = false; playing = true; }
+    function pause() { show('start'); paused = true; playing = false; }
+    function restart() { hide('start'); paused = false; playing = true; }
+    function lose() {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+      }
+      drawHighScore();
+      show('start');
+      setVisualScore();
+      playing = false;
+    }
 
-    function setVisualScore(n)      { vscore = n || score; invalidateScore(); }
-    function setScore(n)            { score = n; setVisualScore(n);  }
-    function addScore(n)            { score = score + n;   }
-    function clearScore()           { setScore(0); }
-    function clearRows()            { setRows(0); }
-    function setRows(n)             { rows = n; step = Math.max(speed.min, speed.start - (speed.decrement*rows)); invalidateRows(); }
-    function addRows(n)             { setRows(rows + n); }
-    function getBlock(x,y)          { return (blocks && blocks[x] ? blocks[x][y] : null); }
-    function setBlock(x,y,type)     { blocks[x] = blocks[x] || []; blocks[x][y] = type; invalidate(); }
-    function clearBlocks()          { blocks = []; invalidate(); }
-    function clearActions()         { actions = []; }
-    function setCurrentPiece(piece) { current = piece || randomPiece(); invalidate();     }
-    function setNextPiece(piece)    { next    = piece || randomPiece(); invalidateNext(); }
+    function setVisualScore(n) { vscore = n || score; invalidateScore(); }
+    function setScore(n) { score = n; setVisualScore(n); }
+    function addScore(n) { score = score + n; }
+    function clearScore() { setScore(0); }
+    function clearRows() { setRows(0); }
+    function setRows(n) { rows = n; step = Math.max(speed.min, speed.start - (speed.decrement * rows)); invalidateRows(); }
+    function addRows(n) { setRows(rows + n); }
+    function getBlock(x, y) { return (blocks && blocks[x] ? blocks[x][y] : null); }
+    function setBlock(x, y, type) { blocks[x] = blocks[x] || []; blocks[x][y] = type; invalidate(); }
+    function clearBlocks() { blocks = []; invalidate(); }
+    function clearActions() { actions = []; }
+    function setCurrentPiece(piece) { current = piece || randomPiece(); invalidate(); }
+    function setNextPiece(piece) { next = piece || randomPiece(); invalidateNext(); }
 
     function reset() {
       dt = 0;
@@ -267,6 +839,10 @@
       clearBlocks();
       clearRows();
       clearScore();
+      pieceCount = 0;
+      html('pieces', pieceCount);
+      setMeta(5);
+      get('msg').className = '';
       setCurrentPiece(next);
       setNextPiece();
     }
@@ -285,20 +861,20 @@
     }
 
     function handle(action) {
-      switch(action) {
-        case DIR.LEFT:  move(DIR.LEFT);  break;
+      switch (action) {
+        case DIR.LEFT: move(DIR.LEFT); break;
         case DIR.RIGHT: move(DIR.RIGHT); break;
-        case DIR.UP:    rotate();        break;
-        case DIR.DOWN:  drop();          break;
+        case DIR.UP: rotate(); break;
+        case DIR.DOWN: drop(); break;
       }
     }
 
     function move(dir) {
       var x = current.x, y = current.y;
-      switch(dir) {
+      switch (dir) {
         case DIR.RIGHT: x = x + 1; break;
-        case DIR.LEFT:  x = x - 1; break;
-        case DIR.DOWN:  y = y + 1; break;
+        case DIR.LEFT: x = x - 1; break;
+        case DIR.DOWN: y = y + 1; break;
       }
       if (unoccupied(current.type, x, y, current.dir)) {
         current.x = x;
@@ -323,6 +899,8 @@
       if (!move(DIR.DOWN)) {
         addScore(10);
         dropPiece();
+        pieceCount++;
+        html('pieces', pieceCount);
         removeLines();
         setCurrentPiece(next);
         setNextPiece(randomPiece());
@@ -334,16 +912,16 @@
     }
 
     function dropPiece() {
-      eachblock(current.type, current.x, current.y, current.dir, function(x, y) {
+      eachblock(current.type, current.x, current.y, current.dir, function (x, y) {
         setBlock(x, y, current.type);
       });
     }
 
     function removeLines() {
       var x, y, complete, n = 0;
-      for(y = ny ; y > 0 ; --y) {
+      for (y = ny; y > 0; --y) {
         complete = true;
-        for(x = 0 ; x < nx ; ++x) {
+        for (x = 0; x < nx; ++x) {
           if (!getBlock(x, y))
             complete = false;
         }
@@ -355,15 +933,37 @@
       }
       if (n > 0) {
         addRows(n);
-        addScore(100*Math.pow(2,n-1)); // 1: 100, 2: 200, 3: 400, 4: 800
+        addScore(100 * Math.pow(2, n - 1)); // 1: 100, 2: 200, 3: 400, 4: 800
+        if (rows >= meta) {
+          mostrarMensagem('Parabéns!<br>Meta de ' + meta + ' linhas!', 'meta');
+          setMeta(meta + 5);
+        }
+        else {
+          var i = Math.min(n, 3) - 1;
+          mostrarMensagem(mensagens[i], tipos[i]);
+        }
       }
+    }
+
+    function setMeta(n) { meta = n; html('meta', meta); }
+
+    function mostrarMensagem(texto, tipo) {
+      var msg = get('msg');
+      msg.innerHTML = texto;
+      msg.className = tipo;
+      void msg.offsetWidth;
+      msg.className = tipo + ' animar';
+
+      canvas.classList.remove('piscar');
+      void canvas.offsetWidth;
+      canvas.classList.add('piscar');
     }
 
     function removeLine(n) {
       var x, y;
-      for(y = n ; y >= 0 ; --y) {
-        for(x = 0 ; x < nx ; ++x)
-          setBlock(x, y, (y == 0) ? null : getBlock(x, y-1));
+      for (y = n; y >= 0; --y) {
+        for (x = 0; x < nx; ++x)
+          setBlock(x, y, (y == 0) ? null : getBlock(x, y - 1));
       }
     }
 
@@ -373,10 +973,10 @@
 
     var invalid = {};
 
-    function invalidate()         { invalid.court  = true; }
-    function invalidateNext()     { invalid.next   = true; }
-    function invalidateScore()    { invalid.score  = true; }
-    function invalidateRows()     { invalid.rows   = true; }
+    function invalidate() { invalid.court = true; }
+    function invalidateNext() { invalid.next = true; }
+    function invalidateScore() { invalid.score = true; }
+    function invalidateRows() { invalid.rows = true; }
 
     function draw() {
       ctx.save();
@@ -395,13 +995,14 @@
         if (playing)
           drawPiece(ctx, current.type, current.x, current.y, current.dir);
         var x, y, block;
-        for(y = 0 ; y < ny ; y++) {
-          for (x = 0 ; x < nx ; x++) {
-            if (block = getBlock(x,y))
+        for (y = 0; y < ny; y++) {
+          for (x = 0; x < nx; x++) {
+            if (block = getBlock(x, y))
               drawBlock(ctx, x, y, block.color);
           }
         }
-        ctx.strokeRect(0, 0, nx*dx - 1, ny*dy - 1); // court boundary
+        ctx.strokeStyle = darkMode ? '#F5F5F5' : '#000000';
+        ctx.strokeRect(0, 0, nx * dx - 1, ny * dy - 1); // court boundary
         invalid.court = false;
       }
     }
@@ -411,10 +1012,10 @@
         var padding = (nu - next.type.size) / 2; // half-arsed attempt at centering next piece display
         uctx.save();
         uctx.translate(0.5, 0.5);
-        uctx.clearRect(0, 0, nu*dx, nu*dy);
+        uctx.clearRect(0, 0, nu * dx, nu * dy);
         drawPiece(uctx, next.type, padding, padding, next.dir);
-        uctx.strokeStyle = 'black';
-        uctx.strokeRect(0, 0, nu*dx - 1, nu*dy - 1);
+        uctx.strokeStyle = darkMode ? '#F5F5F5' : '#000000';
+        uctx.strokeRect(0, 0, nu * dx - 1, nu * dy - 1);
         uctx.restore();
         invalid.next = false;
       }
@@ -433,26 +1034,33 @@
         invalid.rows = false;
       }
     }
+    function drawHighScore() {
+      html('high-score', ("00000" + highScore).slice(-5));
+    }
 
     function drawPiece(ctx, type, x, y, dir) {
-      eachblock(type, x, y, dir, function(x, y) {
+      eachblock(type, x, y, dir, function (x, y) {
         drawBlock(ctx, x, y, type.color);
       });
     }
 
     function drawBlock(ctx, x, y, color) {
       ctx.fillStyle = color;
-      ctx.fillRect(x*dx, y*dy, dx, dy);
-      ctx.strokeRect(x*dx, y*dy, dx, dy)
+      ctx.fillRect(x * dx, y * dy, dx, dy);
+      ctx.strokeRect(x * dx, y * dy, dx, dy)
     }
 
     //-------------------------------------------------------------------------
     // FINALLY, lets run the game
     //-------------------------------------------------------------------------
 
+    drawHighScore();
     run();
 
   </script>
 
 </body>
+
+feat/traducao-pt
 </html>
+
