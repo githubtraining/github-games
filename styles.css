@@ -1,0 +1,755 @@
+body      { font-family: Helvetica, sans-serif; background-color: #efefef; }
+    #game-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      margin: 1.5em auto;
+      max-width: 1300px;
+      padding: 0 12px;
+      box-sizing: border-box;
+    }
+    #tetris   { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 0.5em; min-width: max-content; margin: 0; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; box-sizing: content-box; flex-shrink: 0; }
+    #stats    { display: inline-block; vertical-align: top; }
+    #canvas   { display: inline-block; flex: 0 0 auto; vertical-align: top; background: url(texture.jpg); box-shadow: 10px 10px 10px #999; border: 2px solid #333; }
+    #menu {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.4em;
+      vertical-align: top;
+      position: relative;
+      box-sizing: border-box;
+      padding: 0.5em;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.82);
+      color: #263238;
+      flex: 0 0 auto;
+    }
+    #menu p { margin: 0; text-align: left; }
+    #menu p a { text-decoration: none; color: black; }
+    #menu #start a {
+      display: block;
+      padding: 0.55em 0.4em;
+      border-radius: 6px;
+      background: #2563eb; /* ALTERADO AQUI (Antes era #147d70) */
+      color: #ffffff;
+      font-size: 0.78em;
+      font-weight: 700;
+      text-align: center;
+      transition: background-color 0.18s ease, transform 0.18s ease;
+    }
+    #menu #start a:hover { 
+      background: #1d4ed8; /* ALTERADO AQUI (Antes era #0f6258) */
+      transform: translateY(-1px); 
+    }
+    .menu-preview { display: flex; flex-direction: column; align-items: center; gap: 0.25em; }
+    .menu-section-title, #theme-container label {
+      align-self: flex-start;
+      color: #52616b;
+      font-size: 0.65em;
+      font-weight: 700;
+    }
+    #upcoming { display: block; margin: 0 auto; border-radius: 5px; background-color: #e8eef0; }
+    .menu-stats { display: grid; gap: 0.25em; }
+    .menu-stat { display: flex; align-items: center; justify-content: space-between; gap: 0.4em; font-size: 0.78em; }
+    .stat-label { padding: 0; font-weight: 600; }
+    #score    { color: blue; font-weight: bold; vertical-align: middle; }
+    #rows     { color: #16833c; font-weight: bold; vertical-align: middle; }
+    #level    { color: #d97706; font-weight: bold; vertical-align: middle; }
+    #stats    { position: absolute; bottom: 0em; right: 1em; }
+
+    /* ==========================================================================
+       Painel de Conquistas
+       ========================================================================== */
+    #achievements-panel {
+      width: 320px;
+      max-width: 100%;
+      box-sizing: border-box;
+      border: 4px solid black;
+      border-radius: 10px;
+      background-color: #F8F8F8;
+      padding: 1.1em;
+      flex-shrink: 0;
+    }
+
+    .achievements-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .achievements-title-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .achievements-icon {
+      font-size: 1.3em;
+      line-height: 1;
+    }
+
+    .achievements-title {
+      margin: 0;
+      font-size: 1.15em;
+      color: #111827;
+      font-weight: bold;
+    }
+
+    .achievements-counter {
+      font-size: 0.78em;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background-color: #e5e7eb;
+      color: #374151;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .achievements-counter.has-unlocked {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+
+    .achievements-overall-progress {
+      width: 100%;
+      height: 6px;
+      background-color: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .achievements-overall-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #10b981);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .achievements-subtitle {
+      margin: 0 0 10px 0;
+      font-size: 0.78em;
+      color: #6b7280;
+      line-height: 1.3;
+    }
+
+    .achievements-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .achievement-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1.5px solid #e5e7eb;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .achievement-item.locked {
+      opacity: 0.82;
+      border-color: #e5e7eb;
+      background: #fafafa;
+    }
+
+    .achievement-item.unlocked {
+      opacity: 1;
+      border-color: #10b981;
+      background: linear-gradient(135deg, #fefce8 0%, #ecfdf5 100%);
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .achievement-item-icon {
+      font-size: 1.25em;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .achievement-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .achievement-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .achievement-item-name {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #1f2937;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .achievement-item-pill {
+      font-size: 0.68em;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .achievement-item.locked .achievement-item-pill {
+      background-color: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .achievement-item.unlocked .achievement-item-pill {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .achievement-item-desc {
+      margin: 0 0 5px 0;
+      font-size: 0.74em;
+      color: #6b7280;
+      line-height: 1.25;
+    }
+
+    .achievement-item-track {
+      width: 100%;
+      height: 5px;
+      background-color: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 3px;
+    }
+
+    .achievement-item-bar {
+      height: 100%;
+      background-color: #3b82f6;
+      border-radius: 3px;
+      transition: width 0.35s ease, background-color 0.35s ease;
+    }
+
+    .achievement-item.unlocked .achievement-item-bar {
+      background: #10b981;
+    }
+
+    .achievement-item-meta {
+      font-size: 0.68em;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .achievement-item.unlocked .achievement-item-meta {
+      color: #059669;
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       Notificações Flutuantes (Toast)
+       ========================================================================== */
+    .achievement-toast-container {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 10005;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .achievement-toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(17, 24, 39, 0.96);
+      color: #ffffff;
+      border-radius: 12px;
+      border: 2px solid #f59e0b;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.38), 0 0 16px rgba(245, 158, 11, 0.45);
+      min-width: 270px;
+      max-width: 380px;
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    }
+
+    .achievement-toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .achievement-toast.leaving {
+      transform: translateY(-16px);
+      opacity: 0;
+    }
+
+    .achievement-toast-icon {
+      font-size: 1.8em;
+      line-height: 1;
+      filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.6));
+    }
+
+    .achievement-toast-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .achievement-toast-badge {
+      font-size: 0.65em;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #fbbf24;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .achievement-toast-name {
+      font-size: 0.92em;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 2px 0 1px 0;
+      display: block;
+    }
+
+    .achievement-toast-desc {
+      font-size: 0.74em;
+      color: #d1d5db;
+      display: block;
+    }
+
+    .achievement-toast-close {
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      font-size: 1.25em;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    .achievement-toast-close:hover {
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       Game Over Customizações
+       ========================================================================== */
+    .game-over-final-level { margin: 0; font-size: 1.1em; }
+    #game-over-level { color: #d97706; font-size: 1.25em; }
+
+    .game-over-achievements-box {
+      width: 100%;
+      margin: 0.4em 0;
+      padding: 0.6em 0.8em;
+      background: #f1f5f9;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .game-over-achievements-title {
+      margin: 0 0 6px 0;
+      font-size: 0.9em;
+      color: #334155;
+    }
+
+    .game-over-achievements-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .game-over-achievement-tag {
+      font-size: 0.75em;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+
+    .game-over-achievement-empty {
+      font-size: 0.78em;
+      color: #64748b;
+      font-style: italic;
+    }
+ #game-over { position: fixed; inset: 0; z-index: 10002; display: flex; align-items: center; justify-content: center; padding: 1em; background: rgba(0, 0, 0, 0.72); }
+    #game-over[hidden] { display: none; }
+    .game-over-content { display: grid; justify-items: center; gap: 1em; min-width: 240px; padding: 2em; border: 3px solid #222; border-radius: 8px; background: #F8F8F8; text-align: center; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35); }
+    .game-over-content h1 { margin: 0; color: #c62828; }
+    #game-over-piece { width: 100px; height: 100px; border: 1px solid #333; background: #E0E0E0; }
+    .game-over-final-score, .game-over-final-rows { margin: 0; font-size: 1.1em; }
+    #game-over-score { color: blue; font-size: 1.25em; }
+    #game-over-rows { color: #16833c; font-size: 1.25em; }
+    #game-over-restart { padding: 0.7em 1.2em; border: 0; border-radius: 4px; background: #222; color: white; font: inherit; cursor: pointer; }
+    #game-over-restart:hover { background: #444; }
+#container-pause {
+    display: flex;
+    position: fixed;
+    top: 0;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.2);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        visibility: hidden;
+}
+
+#theme-container label {
+    display: block;
+    margin-bottom: 0.3em;
+    font-weight: bold;
+    font-size: 0.6em;
+}
+
+#theme-select {
+    padding: 0.3em;
+    border: 2px solid #333;
+    border-radius: 5px;
+    background-color: white;
+    color: black;
+    cursor: pointer;
+}
+
+
+/* ============================= */
+/* TEMAS VISUAIS                  */
+/* ============================= */
+
+/* Tema Clássico */
+body.theme-classic #tetris {
+    background-color: #F8F8F8;
+    border-color: black;
+}
+
+body.theme-classic #theme-select {
+    background-color: white;
+    color: black;
+}
+
+
+/* Tema Oceano */
+body.theme-ocean #tetris {
+    background-color: #E3F2FD;
+    border-color: #083a57;
+}
+
+body.theme-ocean #theme-select {
+    background-color: #E1F5FE;
+    color: #01579B;
+    border-color: #0277BD;
+}
+
+body.theme-ocean #menu p a {
+    color: #01579B;
+}
+
+body.theme-ocean #score,
+body.theme-ocean #rows {
+    color: #0277BD;
+}
+
+
+/* Tema Vermelho */
+body.theme-red #tetris {
+    background-color: #FFEBEE;
+    border-color: #B71C1C;
+}
+
+body.theme-red #theme-select {
+    background-color: #FFCDD2;
+    color: #B71C1C;
+    border-color: #B71C1C;
+}
+
+body.theme-red #menu p a {
+    color: #B71C1C;
+}
+
+body.theme-red #score,
+body.theme-red #rows {
+    color: #D32F2F;
+}
+
+
+/* Tema Neon */
+body.theme-neon #tetris {
+    background-color: #111111;
+    border-color: #00FFFF;
+}
+
+body.theme-neon #theme-select {
+    background-color: #222222;
+    color: #00FFFF;
+    border-color: #00FFFF;
+}
+
+/* Todos os textos do menu */
+body.theme-neon #menu p {
+    color: #00FFFF;
+}
+
+/* Botão Press Space to Play */
+body.theme-neon #menu p a {
+    color: #00FFFF;
+}
+
+#pause {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 24px;
+  box-sizing: border-box;
+
+  /* Efeito de Vidro Jateado */
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  
+  /* Bordas arredondadas e sombras sutis */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+#pause-icon {
+ 
+  width: 30px;
+  height: 30px;
+ 
+}
+
+#resume {
+ display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  
+  padding: 0.7em 1.2em; 
+  border: 0;
+   border-radius: 4px;
+    background: #222;
+     color: white;
+      font: inherit;
+       cursor: pointer; 
+ 
+}
+
+#resume:hover {
+    background-color: aqua;
+}
+
+
+
+
+
+
+
+    #restartButton {
+      width: 100%;
+      padding: 0.5em 0.35em;
+      border: 0;
+      border-radius: 6px;
+      background: #e5ecea;
+      color: #263238;
+      font-size: 0.7em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    #restartButton:hover { background: #d3e2de; color: #124d45; }
+
+    /* ============================= */
+    /* SELETOR DE TEMAS               */
+    /* ============================= */
+
+    #theme-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25em;
+      margin: 0;
+    }
+
+    #theme-container label {
+      align-self: flex-start;
+    }
+
+    #theme-select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.4em;
+      border: 0;
+      border-radius: 5px;
+      background-color: #e8eef0;
+      color: #263238;
+      font-size: 0.72em;
+      cursor: pointer;
+    }
+
+    /* ============================= */
+    /* TEMAS VISUAIS                  */
+    /* ============================= */
+
+    body.theme-classic #tetris {
+      background-color: #F8F8F8;
+      border-color: black;
+    }
+
+    body.theme-classic #theme-select {
+      background-color: white;
+      color: black;
+    }
+
+    body.theme-ocean #tetris {
+      background-color: #E3F2FD;
+      border-color: #0277BD;
+    }
+
+    body.theme-ocean #theme-select {
+      background-color: #E1F5FE;
+      color: #01579B;
+      border-color: #0277BD;
+    }
+
+    body.theme-ocean #menu p a {
+      color: #01579B;
+    }
+
+    body.theme-ocean #score,
+    body.theme-ocean #rows {
+      color: #0277BD;
+    }
+
+    body.theme-red #tetris {
+      background-color: #FFEBEE;
+      border-color: #B71C1C;
+    }
+
+    body.theme-red #theme-select {
+      background-color: #FFCDD2;
+      color: #B71C1C;
+      border-color: #B71C1C;
+    }
+
+    body.theme-red #menu p a {
+      color: #B71C1C;
+    }
+
+    body.theme-red #score,
+    body.theme-red #rows {
+      color: #D32F2F;
+    }
+
+    body.theme-neon #tetris {
+      background-color: #111111;
+      border-color: #00FFFF;
+    }
+
+    body.theme-neon #theme-select {
+      background-color: #222222;
+      color: #00FFFF;
+      border-color: #00FFFF;
+    }
+
+    body.theme-neon #menu p {
+      color: #00FFFF;
+    }
+
+    body.theme-neon #menu p a {
+      color: #00FFFF;
+    }
+
+    body.theme-neon #theme-container label {
+      color: #00FFFF;
+    }
+
+    body.theme-neon #score,
+    body.theme-neon #rows {
+      color: #00FFFF;
+    }
+
+    body.theme-neon #canvas {
+      border-color: #00FFFF;
+    }
+
+     body.theme-magic #tetris {
+      background-color: #fffb01;
+      border-color: #d50cfd;
+    }
+
+    body.theme-magic #theme-select {
+      background-color: #fffb01;
+      color: #ffffff;
+      border-color: #d50cfd;
+    }
+
+    body.theme-magic #menu p a {
+      color: #ffffff;
+    }
+
+    body.theme-magic #score,
+    body.theme-magic #rows {
+      color: #d50cfd;
+    }
+
+    /* ============================= */
+    /* NÍVEL (cor)                    */
+    /* ============================= */
+    #level { color: #d97706; font-weight: bold; vertical-align: middle; }
+
+    @media screen and (min-width:   0px) and (min-height:   0px)  { #tetris { font-size: 0.75em; width: 250px; } #menu { width: 100px; height: 200px; } #upcoming { width:  50px; height:  50px; } #canvas { width: 100px; height: 200px; } } /* 10px chunks */
+    @media screen and (min-width: 400px) and (min-height: 400px)  { #tetris { font-size: 1.00em; width: 350px; } #menu { width: 150px; height: 300px; } #upcoming { width:  75px; height:  75px; } #canvas { width: 150px; height: 300px; } } /* 15px chunks */
+    @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } /* 20px chunks */
+    @media screen and (min-width: 600px) and (min-height: 600px)  { #tetris { font-size: 1.50em; width: 550px; } #menu { width: 250px; height: 500px; } #upcoming { width: 125px; height: 125px; } #canvas { width: 250px; height: 500px; } } /* 25px chunks */
+    @media screen and (min-width: 700px) and (min-height: 700px)  { #tetris { font-size: 1.75em; width: 650px; } #menu { width: 300px; height: 600px; } #upcoming { width: 150px; height: 150px; } #canvas { width: 300px; height: 600px; } } /* 30px chunks */
+    @media screen and (min-width: 800px) and (min-height: 800px)  { #tetris { font-size: 2.00em; width: 750px; } #menu { width: 350px; height: 700px; } #upcoming { width: 175px; height: 175px; } #canvas { width: 350px; height: 700px; } } /* 35px chunks */
+    @media screen and (min-width: 900px) and (min-height: 900px)  { #tetris { font-size: 2.25em; width: 850px; } #menu { width: 400px; height: 800px; } #upcoming { width: 200px; height: 200px; } #canvas { width: 400px; height: 800px; } } /* 40px chunks */
+
+    @media screen and (max-width: 860px) {
+      #game-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      #achievements-panel {
+        width: 100%;
+        max-width: 480px;
+      }
+      .achievement-toast-container {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+      }
+      .achievement-toast {
+        min-width: auto;
+        max-width: 100%;
+      }
+    }
+
