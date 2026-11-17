@@ -25,3 +25,16 @@ Para jogar, abra `index.html` em um navegador moderno.
 O jogo tem como base o projeto [GitHub Games](https://github.com/githubtraining/github-games), que por sua vez credita o [JavaScript Tetris de Jake Gordon](https://github.com/jakesgordon/javascript-tetris).
 
 Este software é distribuído sob a licença MIT. Consulte [LICENSE](C:/Users/wwwra/Documents/github-games-gpsl/LICENSE).
+
+## Como contribuir
+
+Quer contribuir com o projeto? Siga os passos abaixo:
+
+### 1. Crie uma branch
+
+Antes de realizar alterações, crie uma branch para sua tarefa:
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b tipo/nome-da-alteracao
