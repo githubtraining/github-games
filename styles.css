@@ -572,20 +572,54 @@ body.theme-neon #menu p a {
 
 
 
-    #restartButton {
-      width: 100%;
-      padding: 0.5em 0.35em;
-      border: 0;
-      border-radius: 6px;
-      background: #e5ecea;
-      color: #263238;
-      font-size: 0.7em;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background-color 0.18s ease, color 0.18s ease;
+#restartButton {
+    width: 100%;
+    padding: 0.65em 0.5em;
+    border: 2px solid #16a085;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: #ffffff;
+    font-size: 0.8em;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(22, 160, 133, 0.25);
+    transition: all 0.25s ease;
+}
+
+#restartButton:hover {
+    background: linear-gradient(135deg, #16a085, #117a65);
+    border-color: #117a65;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(22, 160, 133, 0.35);
+}
+
+#restartButton:active {
+    animation: restartClick 0.35s ease;
+}
+
+@keyframes restartClick {
+    0% {
+        transform: scale(1);
     }
 
-    #restartButton:hover { background: #d3e2de; color: #124d45; }
+    40% {
+        transform: scale(0.90);
+    }
+
+    70% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+#restartButton:focus-visible {
+    outline: 3px solid #48c9b0;
+    outline-offset: 3px;
+}
+
+   
 
     /* ============================= */
     /* SELETOR DE TEMAS               */
