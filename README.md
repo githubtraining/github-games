@@ -8,6 +8,16 @@ O projeto é uma versão de Tetris para navegador, feita em JavaScript. O objeti
 
 Para jogar, abra `index.html` em um navegador moderno.
 
+## Tecnologias utilizadas
+
+O projeto foi desenvolvido com:
+
+| Tecnologia | Documentação |
+|---|---|
+| <a href="https://developer.mozilla.org/pt-BR/docs/Web/HTML"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5" width="64"></a> | [HTML](https://developer.mozilla.org/pt-BR/docs/Web/HTML) |
+| <a href="https://developer.mozilla.org/pt-BR/docs/Web/CSS"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3" width="64"></a> | [CSS](https://developer.mozilla.org/pt-BR/docs/Web/CSS) |
+| <a href="https://developer.mozilla.org/pt-BR/docs/Web/JavaScript"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript" width="64"></a> | [JavaScript](https://developer.mozilla.org/pt-BR/docs/Web/JavaScript) |
+
 ## Contribuidores
 
 - [Fidelixjv](https://github.com/Fidelixjv)
