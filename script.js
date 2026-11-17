@@ -156,6 +156,12 @@ var Stats = function () {
       if (select) {
         select.value = savedTheme;
         select.addEventListener('change', function() {
+          // Issue #23: nao permite trocar o tema durante uma partida em andamento.
+          // Fora da partida (tela inicial e game over) a troca continua liberada.
+          if (playing) {
+            this.value = currentTheme;
+            return;
+          }
           applyTheme(this.value);
         });
       }
@@ -389,6 +395,7 @@ function resumeCountdown() {
 
             paused = false;
             playing = true;
+            setThemeSelectEnabled(false);
         }
     }, 1000);
 }
@@ -398,6 +405,7 @@ function play() {
     reset();
     paused = false;
     playing = true;
+    setThemeSelectEnabled(false);
 
     if (window.TetrisAudio) {
         TetrisAudio.startMusic();
@@ -408,6 +416,7 @@ function pause() {
   show('start');
     paused = true;
     playing = false;
+    setThemeSelectEnabled(true);
     openGameModal();
   
 }
@@ -434,6 +443,7 @@ function lose() {
 
     get('game-over').hidden = false;
     playing = false;
+    setThemeSelectEnabled(true);
 
     if (window.TetrisAudio) {
         TetrisAudio.stopMusic();
@@ -466,9 +476,15 @@ function lose() {
     function setBlock(x,y,type)     { blocks[x] = blocks[x] || []; blocks[x][y] = type; invalidate(); }
     function clearBlocks()          { blocks = []; invalidate(); }
     function clearActions()         { actions = []; }
+    // Issue #23: liga/desliga o seletor de tema conforme o estado da partida.
+    function setThemeSelectEnabled(enabled) {
+      var select = get('theme-select');
+      if (select) select.disabled = !enabled;
+    }
     function setCurrentPiece(piece) { current = piece || randomPiece(); invalidate();     }
     function setNextPiece(piece)    { next    = piece || randomPiece(); invalidateNext(); }
-    function restartGame() {reset();hide('start');paused = false;playing = true;}   
+    function restartGame() {reset();hide('start');paused = false;playing = true;
+      setThemeSelectEnabled(false);}   
 
     function reset() {
       dt = 0;
