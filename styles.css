@@ -547,24 +547,21 @@ body.theme-neon #menu p a {
 }
 
 #resume {
- display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  
-  padding: 0.7em 1.2em; 
-  border: 0;
-   border-radius: 4px;
-    background: #222;
-     color: white;
-      font: inherit;
-       cursor: pointer; 
+      width: 40%;
+      height:40px;
+      padding: 0.5em 0.35em;
+      border: 0;
+      border-radius: 6px;
+      background: #e5ecea;
+      color: #263238;
+      font-size: 0.7em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease;
  
 }
 
-#resume:hover {
-    background-color: aqua;
-}
+  #resume:hover { background: #d3e2de; color: #124d45; }
 
 
 
