@@ -26,6 +26,18 @@ O jogo tem como base o projeto [GitHub Games](https://github.com/githubtraining/
 
 Este software é distribuído sob a licença MIT. Consulte [LICENSE](C:/Users/wwwra/Documents/github-games-gpsl/LICENSE).
 
+## Como contribuir
+
+Quer contribuir com o projeto? Siga os passos abaixo:
+
+### 1. Crie uma branch
+
+Antes de realizar alterações, crie uma branch para sua tarefa:
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b tipo/nome-da-alteracao
 ##  Como Jogar
 
 O objetivo do Tetris é encaixar as peças que aparecem na tela, formando linhas horizontais completas. Quando uma linha é completada, ela desaparece e o jogador ganha pontos.
