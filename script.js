@@ -396,6 +396,10 @@ function resumeCountdown() {
             paused = false;
             playing = true;
             setThemeSelectEnabled(false);
+
+            if (window.TetrisAudio) {
+                TetrisAudio.startMusic();
+            }
         }
     }, 1000);
 }
@@ -418,7 +422,10 @@ function pause() {
     playing = false;
     setThemeSelectEnabled(true);
     openGameModal();
-  
+
+    if (window.TetrisAudio) {
+        TetrisAudio.stopMusic();
+    }
 }
 
 function restart() {
