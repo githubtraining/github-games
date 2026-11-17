@@ -25,3 +25,34 @@ Para jogar, abra `index.html` em um navegador moderno.
 O jogo tem como base o projeto [GitHub Games](https://github.com/githubtraining/github-games), que por sua vez credita o [JavaScript Tetris de Jake Gordon](https://github.com/jakesgordon/javascript-tetris).
 
 Este software é distribuído sob a licença MIT. Consulte [LICENSE](C:/Users/wwwra/Documents/github-games-gpsl/LICENSE).
+
+##  Como Jogar
+
+O objetivo do Tetris é encaixar as peças que aparecem na tela, formando linhas horizontais completas. Quando uma linha é completada, ela desaparece e o jogador ganha pontos.
+
+### Controles
+
+Utilize as teclas do teclado para movimentar as peças:
+
+| Tecla | Ação |
+|---|---|
+| ← (Seta esquerda) | Move a peça para a esquerda |
+| → (Seta direita) | Move a peça para a direita |
+| ↓ (Seta para baixo) | Acelera a descida da peça |
+| ↑ (Seta para cima) | Gira a peça |
+| Espaço (Space) | Inicia o jogo |
+
+### Regras do jogo
+
+1. As peças aparecem na parte superior do tabuleiro.
+2. Utilize as teclas para posicionar e encaixar as peças.
+3. Complete linhas horizontais para eliminá-las.
+4. Cada linha eliminada aumenta sua pontuação.
+5. Evite que as peças alcancem o topo do tabuleiro.
+6. O jogo termina quando não há mais espaço para novas peças.
+
+### Objetivo
+
+Consiga a maior pontuação possível eliminando o máximo de linhas antes que o tabuleiro fique completamente preenchido.
+
+**Boa sorte e divirta-se!**
